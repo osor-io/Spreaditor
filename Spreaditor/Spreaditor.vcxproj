@@ -69,14 +69,35 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\include;C:\dep\sfml\include;$(ProjectDir)src\utils;C:\dep\GSL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SFML_STATIC;SFML_STATIC;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\dep\sfml\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-system-s.lib;sfml-window-s.lib;sfml-network-s.lib;sfml-graphics-s.lib;sfml-audio-s.lib;opengl32.lib;freetype.lib;jpeg.lib;ogg.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -84,7 +105,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\include;C:\dep\sfml\include;$(ProjectDir)src\utils;C:\dep\GSL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SFML_STATIC;SFML_STATIC;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\dep\sfml\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-system-s-d.lib;sfml-window-s-d.lib;sfml-network-s-d.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;opengl32.lib;freetype.lib;jpeg.lib;ogg.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -94,10 +121,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\include;C:\dep\sfml\include;$(ProjectDir)src\utils;C:\dep\GSL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SFML_STATIC;SFML_STATIC;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\dep\sfml\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-system-s.lib;sfml-window-s.lib;sfml-network-s.lib;sfml-graphics-s.lib;sfml-audio-s.lib;opengl32.lib;freetype.lib;jpeg.lib;ogg.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -108,13 +139,108 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\include;C:\dep\sfml\include;$(ProjectDir)src\utils;C:\dep\GSL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SFML_STATIC;SFML_STATIC;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\dep\sfml\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-system-s.lib;sfml-window-s.lib;sfml-network-s.lib;sfml-graphics-s.lib;sfml-audio-s.lib;opengl32.lib;freetype.lib;jpeg.lib;ogg.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="dep\src\detail\pugixml.cpp" />
+    <ClCompile Include="dep\src\FreeFuncs.cpp" />
+    <ClCompile Include="dep\src\ImageLayer.cpp" />
+    <ClCompile Include="dep\src\imgui-SFML.cpp" />
+    <ClCompile Include="dep\src\imgui.cpp" />
+    <ClCompile Include="dep\src\ImGuizmo.cpp" />
+    <ClCompile Include="dep\src\imgui_demo.cpp" />
+    <ClCompile Include="dep\src\imgui_draw.cpp" />
+    <ClCompile Include="dep\src\ImSequencer.cpp" />
+    <ClCompile Include="dep\src\Map.cpp" />
+    <ClCompile Include="dep\src\miniz.c" />
+    <ClCompile Include="dep\src\Object.cpp" />
+    <ClCompile Include="dep\src\ObjectGroup.cpp" />
+    <ClCompile Include="dep\src\Property.cpp" />
+    <ClCompile Include="dep\src\StringCast.cpp" />
+    <ClCompile Include="dep\src\TileLayer.cpp" />
+    <ClCompile Include="dep\src\Tileset.cpp" />
+    <ClCompile Include="src\gui\GUIManager.cpp" />
+    <ClCompile Include="src\config\Config.cpp" />
+    <ClCompile Include="src\input\InputManager.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\math\AABB.cpp" />
+    <ClCompile Include="src\math\OtherMath.cpp" />
+    <ClCompile Include="src\render\RenderManager.cpp" />
+    <ClCompile Include="src\sprites\Spritesheet.cpp" />
+    <ClCompile Include="src\time\TimeManager.cpp" />
+    <ClCompile Include="src\utils\Debug.cpp" />
+    <ClCompile Include="src\utils\File.cpp" />
+    <ClCompile Include="src\window\WindowManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dep\include\detail\MetaHolder.h" />
+    <ClInclude Include="dep\include\detail\template_helpers.h" />
+    <ClInclude Include="dep\include\imconfig.h" />
+    <ClInclude Include="dep\include\imgui-SFML.h" />
+    <ClInclude Include="dep\include\imgui.h" />
+    <ClInclude Include="dep\include\ImGuizmo.h" />
+    <ClInclude Include="dep\include\imgui_internal.h" />
+    <ClInclude Include="dep\include\ImSequencer.h" />
+    <ClInclude Include="dep\include\json.hpp" />
+    <ClInclude Include="dep\include\JsonCast.h" />
+    <ClInclude Include="dep\include\Member.h" />
+    <ClInclude Include="dep\include\Meta.h" />
+    <ClInclude Include="dep\include\SFMLOrthogonalLayer.hpp" />
+    <ClInclude Include="dep\include\stb_rect_pack.h" />
+    <ClInclude Include="dep\include\stb_textedit.h" />
+    <ClInclude Include="dep\include\stb_truetype.h" />
+    <ClInclude Include="dep\include\StringCast.h" />
+    <ClInclude Include="dep\include\tmxlite\Config.hpp" />
+    <ClInclude Include="dep\include\tmxlite\detail\Android.hpp" />
+    <ClInclude Include="dep\include\tmxlite\detail\Log.hpp" />
+    <ClInclude Include="dep\include\tmxlite\FreeFuncs.hpp" />
+    <ClInclude Include="dep\include\tmxlite\ImageLayer.hpp" />
+    <ClInclude Include="dep\include\tmxlite\Layer.hpp" />
+    <ClInclude Include="dep\include\tmxlite\Map.hpp" />
+    <ClInclude Include="dep\include\tmxlite\Object.hpp" />
+    <ClInclude Include="dep\include\tmxlite\ObjectGroup.hpp" />
+    <ClInclude Include="dep\include\tmxlite\Property.hpp" />
+    <ClInclude Include="dep\include\tmxlite\TileLayer.hpp" />
+    <ClInclude Include="dep\include\tmxlite\Tileset.hpp" />
+    <ClInclude Include="dep\include\tmxlite\Types.hpp" />
+    <ClInclude Include="dep\src\detail\pugiconfig.hpp" />
+    <ClInclude Include="dep\src\detail\pugixml.hpp" />
+    <ClInclude Include="dep\src\miniz.h" />
+    <ClInclude Include="src\gui\GUIManager.h" />
+    <ClInclude Include="src\config\Config.h" />
+    <ClInclude Include="src\debug\LoggingManager.h" />
+    <ClInclude Include="src\input\InputManager.h" />
+    <ClInclude Include="src\math\AABB.h" />
+    <ClInclude Include="src\math\OtherMath.h" />
+    <ClInclude Include="src\math\Vector.h" />
+    <ClInclude Include="src\render\RenderManager.h" />
+    <ClInclude Include="src\resources\ResourceManager.h" />
+    <ClInclude Include="src\resources\TextFileManager.h" />
+    <ClInclude Include="src\resources\TextureManager.h" />
+    <ClInclude Include="src\sprites\Spritesheet.h" />
+    <ClInclude Include="src\time\TimeManager.h" />
+    <ClInclude Include="src\types\def.h" />
+    <ClInclude Include="src\utils\CRSP.h" />
+    <ClInclude Include="src\utils\Debug.h" />
+    <ClInclude Include="src\utils\File.h" />
+    <ClInclude Include="src\utils\Manager.h" />
+    <ClInclude Include="src\window\WindowManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dep\include\detail\template_helpers.inl" />
+    <None Include="dep\include\JsonCast.inl" />
+    <None Include="dep\include\Member.inl" />
+    <None Include="dep\include\Meta.inl" />
+    <None Include="dep\include\tmxlite\Types.inl" />
+    <None Include="src\debug\cafe.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
