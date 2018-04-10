@@ -22,6 +22,7 @@ public:
     bool is_window_open() const;
     const std::vector<sf::Event>& get_frame_events() const;
 
+    sf::WindowHandle & get_window_handle();
 
 private:
     std::vector<sf::Event> m_frame_events;

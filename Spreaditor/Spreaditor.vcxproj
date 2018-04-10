@@ -167,6 +167,7 @@
     <ClCompile Include="dep\src\StringCast.cpp" />
     <ClCompile Include="dep\src\TileLayer.cpp" />
     <ClCompile Include="dep\src\Tileset.cpp" />
+    <ClCompile Include="src\os\OSManager.cpp" />
     <ClCompile Include="src\gui\GUIManager.cpp" />
     <ClCompile Include="src\config\Config.cpp" />
     <ClCompile Include="src\input\InputManager.cpp" />
@@ -214,6 +215,7 @@
     <ClInclude Include="dep\src\detail\pugiconfig.hpp" />
     <ClInclude Include="dep\src\detail\pugixml.hpp" />
     <ClInclude Include="dep\src\miniz.h" />
+    <ClInclude Include="src\os\OSManager.h" />
     <ClInclude Include="src\gui\GUIManager.h" />
     <ClInclude Include="src\config\Config.h" />
     <ClInclude Include="src\debug\LoggingManager.h" />

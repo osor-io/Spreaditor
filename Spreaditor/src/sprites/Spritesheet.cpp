@@ -164,6 +164,9 @@ void Spritesheet::fill_sprite_container() {
             columns but only 7 sprites, two sprites that reference the
             last two positions (3,2) & (3,3) will me inserted but they
             will only contain the background color and not really any sprite.
+
+            This is valid because you might want empty sprites in some animation,
+            an empty sprite might represent a real sprite that we want to render.
             */
             m_sprite_container.push_back(
                 Sprite(

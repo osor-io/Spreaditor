@@ -9,6 +9,7 @@
 #include "./resources/TextureManager.h"
 #include "./time/TimeManager.h"
 #include "./window/WindowManager.h"
+#include "./os/OSManager.h"
 
 
 
@@ -19,6 +20,7 @@ void start_up() {
     TextureManager::get().start_up();
     TimeManager::get().start_up();
     WindowManager::get().start_up();
+    OSManager::get().start_up();
     RenderManager::get().start_up();
     InputManager::get().start_up();
 }
@@ -27,6 +29,7 @@ void shut_down() {
 
     InputManager::get().shut_down();
     RenderManager::get().shut_down();
+    OSManager::get().shut_down();
     WindowManager::get().shut_down();
     TimeManager::get().shut_down();
     TextureManager::get().shut_down();
@@ -52,7 +55,7 @@ inline void tick() {
     be bad and keep getting worse with each printing since we are accumulating stuff to print
     to standard output.
     */
-    LOG("Tick Time: " << TimeManager::get().get_tick_ms());
+    //LOG("Tick Time: " << TimeManager::get().get_tick_ms());
 }
 
 inline void render() {
@@ -83,6 +86,6 @@ int main() {
     }
     shut_down();
 
-    press_to_continue();
+    //press_to_continue();
     return EXIT_SUCCESS;
 }

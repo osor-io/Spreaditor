@@ -6,6 +6,10 @@
 #include "../utils/File.h"
 #include "../render/RenderManager.h"
 #include "gsl\gsl"
+#include "../os/OSManager.h"
+
+//@@TODO @@REMOVE
+#include "../sprites/Spritesheet.h"
 
 GUIManager::GUIManager() {}
 
@@ -139,10 +143,27 @@ void GUIManager::draw_gui() {
 
         if (ImGui::BeginMenu("File")) {
 
-            if (ImGui::Button("New Project")) {
-              
+            if (ImGui::Button("New Project From Spritesheet")) {
+
+                auto filename = OSManager::get().user_open_file();
+
+                if (filename.size() > 0)
+                    CLOG(filename);
+
+                //@@TODO: Check here for the file type.
+
+                auto spritesheet = Spritesheet(filename);
+
+                CLOG_NAMED(spritesheet.get_cols());
+                CLOG_NAMED(spritesheet.get_rows());
+                CLOG_NAMED(spritesheet.get_sprite_height());
+                CLOG_NAMED(spritesheet.get_sprite_width());
+                CLOG_NAMED(spritesheet.get_sprites().size());
+
+                //@@DOING: Loading sprites read into somewhere?
+
             }
-            
+
             ImGui::EndMenu();
         }
 
