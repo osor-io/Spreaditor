@@ -4,49 +4,22 @@
 #include "File.h"
 #include <tuple>
 
-Spritesheet::Spritesheet(const std::string & texture_filename, SpritesheetMorphology type) {
-
-    if (!fill_image_cache(texture_filename)) return;
-
-    int rows, cols;
-    std::tie(rows, cols) = infer_rows_and_columns(*m_image_cache);
-
-    /*
-    @@NOTE
-
-    I agree, this is kind of hacky and maybe not the best option.
-    A best way to do it would be to refactor the code inside these
-    specific constructors into other functions and then have each
-    constructor only call the necessary functions, keeping the constuctors
-    self-contained and independent from each other.
-
-    I did it this way because I am experimenting with these kind of things
-    to find out wether this is a good/decent solution for some specific
-    cases like this one where you sort of have what I'll call "cascading"
-    constructors, where one with less parameters calculates some stuff and
-    then gives information to the next one until you reach the bottom of 
-    the "cascade" where you have all of the required parameters to finally
-    create the object correctly.
-    */
-    *this = Spritesheet(texture_filename, rows, cols, type);
+Spritesheet::Spritesheet(const std::string & texture_filename, SpritesheetMorphology type) :
+    m_sprite_type(type),
+    m_texture_filename(texture_filename),
+    m_texture(TextureManager::get().get_required_resource(texture_filename))
+{
+    construct(texture_filename, type);
 }
 
-Spritesheet::Spritesheet(const std::string & texture_filename, int rows, int cols, SpritesheetMorphology type) {
-
-    if (!fill_image_cache(texture_filename)) return;
-
-    int sprite_width;
-    int sprite_height;
-
-    if (type == SpritesheetMorphology::SQUARE) {
-        sprite_width = sprite_height = m_image_cache->getSize().x / cols;
-    }
-    else  if (type == SpritesheetMorphology::UNIFORMLY_PACKED) {
-        sprite_width = m_image_cache->getSize().x / cols;
-        sprite_height = m_image_cache->getSize().y / rows;
-    }
-
-    *this = Spritesheet(texture_filename, rows, cols, sprite_width, sprite_height, type);
+Spritesheet::Spritesheet(const std::string & texture_filename, int rows, int cols, SpritesheetMorphology type) :
+    m_sprite_type(type),
+    m_rows(rows),
+    m_cols(cols),
+    m_texture_filename(texture_filename),
+    m_texture(TextureManager::get().get_required_resource(texture_filename))
+{
+    construct(texture_filename, rows, cols, type);
 }
 
 Spritesheet::Spritesheet(const std::string & texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type) :
@@ -58,6 +31,40 @@ Spritesheet::Spritesheet(const std::string & texture_filename, int rows, int col
     m_texture_filename(texture_filename),
     m_texture(TextureManager::get().get_required_resource(texture_filename))
 {
+    construct(texture_filename, rows, cols, m_sprite_width, m_sprite_height, type);
+}
+
+Spritesheet::~Spritesheet() {
+    if (m_texture) {
+        TextureManager::get().release_required_resource(m_texture_filename);
+        m_texture = nullptr;
+    }
+}
+
+void Spritesheet::construct(const std::string & texture_filename, SpritesheetMorphology type) {
+    if (!fill_image_cache(texture_filename)) return;
+
+    std::tie(m_rows, m_cols) = infer_rows_and_columns(*m_image_cache);
+
+    construct(texture_filename, m_rows, m_cols, type);
+}
+
+void Spritesheet::construct(const std::string & texture_filename, int rows, int cols, SpritesheetMorphology type) {
+    if (!fill_image_cache(texture_filename)) return;
+
+    if (type == SpritesheetMorphology::SQUARE) {
+        m_sprite_width = m_sprite_height = m_image_cache->getSize().x / cols;
+    }
+    else  if (type == SpritesheetMorphology::UNIFORMLY_PACKED) {
+        m_sprite_width = m_image_cache->getSize().x / cols;
+        m_sprite_height = m_image_cache->getSize().y / rows;
+    }
+
+    construct(texture_filename, rows, cols, m_sprite_width, m_sprite_height, type);
+}
+
+void Spritesheet::construct(const std::string & texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type) {
+
     if (m_image_cache != nullptr) delete m_image_cache;
 
     if (!m_texture) {
@@ -78,13 +85,6 @@ Spritesheet::Spritesheet(const std::string & texture_filename, int rows, int col
         CLOG_ERROR("We weren't able to detect any sprites from the texture read from " << m_texture_filename);
         m_valid = false;
         return;
-    }
-}
-
-Spritesheet::~Spritesheet() {
-    if (m_texture) {
-        TextureManager::get().release_required_resource(m_texture_filename);
-        m_texture = nullptr;
     }
 }
 
@@ -189,7 +189,7 @@ void Spritesheet::fill_sprite_container() {
     }
 }
 
-bool Spritesheet::fill_image_cache(const std::string & filename){
+bool Spritesheet::fill_image_cache(const std::string & filename) {
     if (m_image_cache == nullptr) {
         m_image_cache = new Image();
         m_image_cache->loadFromFile(filename);

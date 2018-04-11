@@ -1,14 +1,8 @@
 #pragma once
 
 #include <utility>
-#include <unordered_set>
-#include <set>
-
 
 using byte = unsigned char;
-using EntityId = unsigned int;
-using EntityIdSet = std::set<EntityId>;
-using Chunk = std::pair<int, int>;
 
 struct PairIntIntHash {
     template <typename T, typename U>
@@ -20,4 +14,3 @@ struct PairIntIntHash {
     }
 };
 
-using ChunkSet = std::unordered_set<Chunk, PairIntIntHash>;

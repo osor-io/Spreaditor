@@ -21,7 +21,6 @@ class Spritesheet {
     using IntRect = sf::IntRect;
     using Texture = sf::Texture;
     using Image = sf::Image;
-    using SpriteContainer = std::vector<Sprite>;
 
 public:
 
@@ -35,7 +34,8 @@ public:
     Spritesheet(const std::string& texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
     ~Spritesheet();
 
-    const SpriteContainer& get_sprites() const { return m_sprite_container; }
+
+    const std::vector<sf::Sprite>& get_sprites() const { return m_sprite_container; }
     int get_rows() const { return m_rows; }
     int get_cols() const { return m_cols; }
     int get_sprite_width() const { return m_sprite_width; }
@@ -43,6 +43,10 @@ public:
     bool is_valid() const { return m_valid; }
 
 private: // Member Functions
+
+    void construct(const std::string& texture_filename, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
+    void construct(const std::string& texture_filename, int rows, int cols, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
+    void construct(const std::string& texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
 
     std::tuple<int, int> infer_rows_and_columns(const Image&);
 
@@ -67,7 +71,7 @@ private: // Member Functions
 
 private: // Member Attributes
 
-    SpriteContainer m_sprite_container{};
+    std::vector<sf::Sprite> m_sprite_container{};
     Texture* m_texture{ nullptr };
     std::string m_texture_filename{};
 

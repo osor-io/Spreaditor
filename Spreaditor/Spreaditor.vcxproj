@@ -155,6 +155,7 @@
     <ClCompile Include="dep\src\ImageLayer.cpp" />
     <ClCompile Include="dep\src\imgui-SFML.cpp" />
     <ClCompile Include="dep\src\imgui.cpp" />
+    <ClCompile Include="dep\src\imguidock_flix.cpp" />
     <ClCompile Include="dep\src\ImGuizmo.cpp" />
     <ClCompile Include="dep\src\imgui_demo.cpp" />
     <ClCompile Include="dep\src\imgui_draw.cpp" />
@@ -167,6 +168,7 @@
     <ClCompile Include="dep\src\StringCast.cpp" />
     <ClCompile Include="dep\src\TileLayer.cpp" />
     <ClCompile Include="dep\src\Tileset.cpp" />
+    <ClCompile Include="src\sprites\SpriteManager.cpp" />
     <ClCompile Include="src\os\OSManager.cpp" />
     <ClCompile Include="src\gui\GUIManager.cpp" />
     <ClCompile Include="src\config\Config.cpp" />
@@ -188,6 +190,7 @@
     <ClInclude Include="dep\include\imconfig.h" />
     <ClInclude Include="dep\include\imgui-SFML.h" />
     <ClInclude Include="dep\include\imgui.h" />
+    <ClInclude Include="dep\include\imguidock_flix.h" />
     <ClInclude Include="dep\include\ImGuizmo.h" />
     <ClInclude Include="dep\include\imgui_internal.h" />
     <ClInclude Include="dep\include\ImSequencer.h" />
@@ -216,6 +219,7 @@
     <ClInclude Include="dep\src\detail\pugiconfig.hpp" />
     <ClInclude Include="dep\src\detail\pugixml.hpp" />
     <ClInclude Include="dep\src\miniz.h" />
+    <ClInclude Include="src\sprites\SpriteManager.h" />
     <ClInclude Include="src\os\OSManager.h" />
     <ClInclude Include="src\gui\GUIManager.h" />
     <ClInclude Include="src\config\Config.h" />

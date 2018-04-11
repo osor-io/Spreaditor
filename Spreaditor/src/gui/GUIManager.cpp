@@ -8,8 +8,7 @@
 #include "gsl\gsl"
 #include "../os/OSManager.h"
 #include "GUIUtils.h"
-
-//@@TODO @@REMOVE
+#include "../sprites/SpriteManager.h"
 #include "../sprites/Spritesheet.h"
 
 GUIManager::GUIManager() {}
@@ -183,17 +182,21 @@ void GUIManager::do_gui() {
 
                     CLOG("Loading spritesheet from " << filename);
 
-                    if (!file_exists(filename.c_str())) {
+                    auto cfilename = filename.c_str();
+
+                    if (!file_exists(cfilename)) {
                         CLOG_ERROR("Incorrect File Path");
                         ImGui::OpenPopup("Incorrect File Path");
                     }
                     else {
 
-                        auto spritesheet = Spritesheet(filename);
+                        auto loaded = SpriteManager::get().load_spritesheet(cfilename);
 
-                        if (!spritesheet.is_valid()) {
-                            CLOG_ERROR("Incorrect spritesheet");
-                            ImGui::OpenPopup("Incorrect spritesheet");
+                        auto spritesheet = SpriteManager::get().get_spritesheet();
+
+                        if (!loaded || !spritesheet) {
+                            CLOG_ERROR("Incorrect Spritesheet");
+                            ImGui::OpenPopup("Incorrect Spritesheet");
                         }
                         else {
 
@@ -202,13 +205,11 @@ void GUIManager::do_gui() {
 
                             Check why these are getting logged into the file but yes into the console
                             */
-                            CLOG("\tSpritesheet rows: " << spritesheet.get_rows());
-                            CLOG("\tSpritesheet columns: " << spritesheet.get_cols());
-                            CLOG("\tSprite width: " << spritesheet.get_sprite_width());
-                            CLOG("\tSprite height: " << spritesheet.get_sprite_height());
-                            CLOG("\tAmount of sprites read: " << spritesheet.get_sprites().size());
-
-                            //@@DOING: Loading sprites read into somewhere?
+                            CLOG("\tSpritesheet rows: " << spritesheet->get_rows());
+                            CLOG("\tSpritesheet columns: " << spritesheet->get_cols());
+                            CLOG("\tSprite width: " << spritesheet->get_sprite_width());
+                            CLOG("\tSprite height: " << spritesheet->get_sprite_height());
+                            CLOG("\tAmount of sprites read: " << spritesheet->get_sprites().size());
 
                             CLOG("Correctly loaded spritesheet from " << filename);
                             ImGui::CloseCurrentPopup();

@@ -10,11 +10,11 @@
 #include "./time/TimeManager.h"
 #include "./window/WindowManager.h"
 #include "./os/OSManager.h"
+#include "./sprites/SpriteManager.h"
 
 
 
 void start_up() {
-
     LoggingManager::get().start_up();
     TextFileManager::get().start_up();
     TextureManager::get().start_up();
@@ -23,10 +23,11 @@ void start_up() {
     OSManager::get().start_up();
     RenderManager::get().start_up();
     InputManager::get().start_up();
+    SpriteManager::get().start_up();
 }
 
 void shut_down() {
-
+    SpriteManager::get().shut_down();
     InputManager::get().shut_down();
     RenderManager::get().shut_down();
     OSManager::get().shut_down();
@@ -67,7 +68,13 @@ inline void render() {
     next scope
     */
     {
+        auto render_target = RenderManager::get().get_main_render_target();
 
+        if (render_target) {
+
+            SpriteManager::get().render_main_sprite(render_target);
+
+        }
     }
     RenderManager::get().end_frame();
 

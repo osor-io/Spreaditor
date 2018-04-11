@@ -108,6 +108,12 @@
     <ClCompile Include="src\utils\GUIUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\sprites\SpriteManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\src\imguidock_flix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config\Config.h">
@@ -254,9 +260,6 @@
     <ClInclude Include="dep\src\detail\pugixml.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dep\src\miniz.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\time\TimeManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -270,6 +273,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\GUIUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sprites\SpriteManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\include\imguidock_flix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\src\miniz.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
