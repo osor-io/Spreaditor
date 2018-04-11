@@ -20,7 +20,7 @@ public:
     void shut_down() override;
 
 
-    void draw_gui();
+    void do_gui();
     void draw_corner_overlay_debug_info();
 
     void set_debug_open(bool);

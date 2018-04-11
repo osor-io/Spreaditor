@@ -6,10 +6,7 @@
 
 Spritesheet::Spritesheet(const std::string & texture_filename, SpritesheetMorphology type) {
 
-    if (m_image_cache == nullptr) {
-        m_image_cache = new Image();
-        m_image_cache->loadFromFile(texture_filename);
-    }
+    if (!fill_image_cache(texture_filename)) return;
 
     int rows, cols;
     std::tie(rows, cols) = infer_rows_and_columns(*m_image_cache);
@@ -36,10 +33,7 @@ Spritesheet::Spritesheet(const std::string & texture_filename, SpritesheetMorpho
 
 Spritesheet::Spritesheet(const std::string & texture_filename, int rows, int cols, SpritesheetMorphology type) {
 
-    if (m_image_cache == nullptr) {
-        m_image_cache = new Image();
-        m_image_cache->loadFromFile(texture_filename);
-    }
+    if (!fill_image_cache(texture_filename)) return;
 
     int sprite_width;
     int sprite_height;
@@ -68,10 +62,23 @@ Spritesheet::Spritesheet(const std::string & texture_filename, int rows, int col
 
     if (!m_texture) {
         CLOG_ERROR("We couldn't load the texture from the file " << m_texture_filename);
+        m_valid = false;
+        return;
+    }
+
+    if (m_sprite_width == 0 || m_sprite_height == 0) {
+        CLOG_ERROR("Sprite Width or Height is 0 for the texture read from " << m_texture_filename);
+        m_valid = false;
         return;
     }
 
     fill_sprite_container();
+
+    if (m_sprite_container.size() == 0) {
+        CLOG_ERROR("We weren't able to detect any sprites from the texture read from " << m_texture_filename);
+        m_valid = false;
+        return;
+    }
 }
 
 Spritesheet::~Spritesheet() {
@@ -180,4 +187,17 @@ void Spritesheet::fill_sprite_container() {
             );
         }
     }
+}
+
+bool Spritesheet::fill_image_cache(const std::string & filename){
+    if (m_image_cache == nullptr) {
+        m_image_cache = new Image();
+        m_image_cache->loadFromFile(filename);
+        if (m_image_cache->getSize().x == 0 || m_image_cache->getSize().y == 0) {
+            CLOG_ERROR("We weren't able to read any pixels from the file " << m_texture_filename);
+            m_valid = false;
+            return false;
+        }
+    }
+    return true;
 }

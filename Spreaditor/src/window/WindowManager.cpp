@@ -54,7 +54,6 @@ const std::vector<sf::Event>& WindowManager::get_frame_events() const {
     return m_frame_events;
 }
 
-sf::WindowHandle & WindowManager::get_window_handle() {
-    auto handle = m_window->getSystemHandle();
-    return handle;
+sf::WindowHandle WindowManager::get_window_handle() {
+    return m_window->getSystemHandle();
 }

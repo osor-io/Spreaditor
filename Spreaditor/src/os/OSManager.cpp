@@ -23,7 +23,7 @@ std::string OSManager::user_open_file(const char* filters) {
 
     auto dialog_data = OPENFILENAME{};
     char filename_buffer[MAX_OS_FILENAME_SIZE];
-    auto& window_handle = WindowManager::get().get_window_handle();
+    auto window_handle = WindowManager::get().get_window_handle();
     auto file_handle = HANDLE{};
 
     ZeroMemory(&dialog_data, sizeof(dialog_data));

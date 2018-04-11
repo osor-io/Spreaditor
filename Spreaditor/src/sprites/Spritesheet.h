@@ -40,6 +40,7 @@ public:
     int get_cols() const { return m_cols; }
     int get_sprite_width() const { return m_sprite_width; }
     int get_sprite_height() const { return m_sprite_height; }
+    bool is_valid() const { return m_valid; }
 
 private: // Member Functions
 
@@ -62,6 +63,8 @@ private: // Member Functions
 
     void fill_sprite_container();
 
+    bool fill_image_cache(const std::string& filename);
+
 private: // Member Attributes
 
     SpriteContainer m_sprite_container{};
@@ -72,6 +75,7 @@ private: // Member Attributes
     int m_cols{};
     int m_sprite_width{};
     int m_sprite_height{};
+    bool m_valid{ true };
     SpritesheetMorphology m_sprite_type{};
 
 

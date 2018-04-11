@@ -7,6 +7,7 @@
 #include "../render/RenderManager.h"
 #include "gsl\gsl"
 #include "../os/OSManager.h"
+#include "GUIUtils.h"
 
 //@@TODO @@REMOVE
 #include "../sprites/Spritesheet.h"
@@ -133,7 +134,7 @@ bool GUIManager::is_debug_open() const {
     return m_debug_open;
 }
 
-void GUIManager::draw_gui() {
+void GUIManager::do_gui() {
 
     if (m_debug_open) {
 
@@ -143,31 +144,116 @@ void GUIManager::draw_gui() {
 
         if (ImGui::BeginMenu("File")) {
 
-            if (ImGui::Button("New Project From Spritesheet")) {
+            BEGIN_MENU_POPUP_MODAL("New Project From Spritesheet");
+            {
 
-                auto filename = OSManager::get().user_open_file();
+                static auto filename = std::string{};
 
-                if (filename.size() > 0)
-                    CLOG(filename);
+                static char loading_filename[MAX_OS_FILENAME_SIZE];
 
-                //@@TODO: Check here for the file type.
+                ImGui::Text("Spritesheet file: ");
+                ImGui::SameLine(150);
+                ImGui::InputText("##Filename", loading_filename, MAX_OS_FILENAME_SIZE);
+                ImGui::SameLine();
+                if (ImGui::Button("Explore", ImVec2(120, 0))) {
+                    filename = OSManager::get().user_open_file(\
+                        "(*.png) Portable Network Graphics\0*.png\0"
+                        "(*.bmp) Windows bitmap\0*.bmp\0"
+                        "(*.jpg) Joint Photographic Experts Group\0*.jpg\0"
 
-                auto spritesheet = Spritesheet(filename);
+                    );
+                    assert(filename.size() < MAX_OS_FILENAME_SIZE);
+                    filename.copy(loading_filename, filename.size());
+                    loading_filename[filename.size()] = '\0';
+                }
 
-                CLOG_NAMED(spritesheet.get_cols());
-                CLOG_NAMED(spritesheet.get_rows());
-                CLOG_NAMED(spritesheet.get_sprite_height());
-                CLOG_NAMED(spritesheet.get_sprite_width());
-                CLOG_NAMED(spritesheet.get_sprites().size());
+                ImGui::TextWrapped("This will close the current project without keeping unsaved changes.");
 
-                //@@DOING: Loading sprites read into somewhere?
+
+                IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+                IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+
+                    filename.clear();
+                    filename.append(loading_filename);
+
+                    CLOG("Loading spritesheet from " << filename);
+
+                    if (!file_exists(filename.c_str())) {
+                        CLOG_ERROR("Incorrect File Path");
+                        ImGui::OpenPopup("Incorrect File Path");
+                    }
+                    else {
+
+                        auto spritesheet = Spritesheet(filename);
+
+                        if (!spritesheet.is_valid()) {
+                            CLOG_ERROR("Incorrect spritesheet");
+                            ImGui::OpenPopup("Incorrect spritesheet");
+                        }
+                        else {
+
+                            /*
+                            @@TODO
+
+                            Check why these are getting logged into the file but yes into the console
+                            */
+                            CLOG("\tSpritesheet rows: " << spritesheet.get_rows());
+                            CLOG("\tSpritesheet columns: " << spritesheet.get_cols());
+                            CLOG("\tSprite width: " << spritesheet.get_sprite_width());
+                            CLOG("\tSprite height: " << spritesheet.get_sprite_height());
+                            CLOG("\tAmount of sprites read: " << spritesheet.get_sprites().size());
+
+                            //@@DOING: Loading sprites read into somewhere?
+
+                            CLOG("Correctly loaded spritesheet from " << filename);
+                            ImGui::CloseCurrentPopup();
+                        }
+                    }
+                }
+                END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+                if (ImGui::BeginPopupModal("Incorrect File Path"))
+                {
+                    ImGui::Text("The spritesheet file you are trying to open doesn't exist:\nPath: \"%s\"", filename.c_str());
+
+                    IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+                    {
+                        ImGui::CloseCurrentPopup();
+                    }
+                    END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+                    ImGui::EndPopup();
+                }
+
+                if (ImGui::BeginPopupModal("Incorrect Spritesheet"))
+                {
+                    ImGui::Text("The spritesheet file could not be parsed correctly:\nPath: \"%s\"", filename.c_str());
+
+                    IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+                    {
+                        ImGui::CloseCurrentPopup();
+                    }
+                    END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+                    ImGui::EndPopup();
+                }
 
             }
+            END_MENU_POPUP_MODAL;
 
+
+
+
+            // ====== END OF FILE MENU ======
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("View")) {
+        if (ImGui::BeginMenu("Debug")) {
             ImGui::Checkbox("Debug Overlay", &m_show_debug_overlay);
             ImGui::Checkbox("ImGui Demo", &m_show_imgui_demo);
             ImGui::EndMenu();

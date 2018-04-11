@@ -76,7 +76,7 @@ void RenderManager::end_frame() {
     ImGui::SFML::Update(*m_main_target, DELTA_TIME);
 
     // @@TODO: Here draw ImGUI stuff
-    GUIManager::get().draw_gui();
+    GUIManager::get().do_gui();
 
     /*
     Now we render overlayed things such as the debug GUI
