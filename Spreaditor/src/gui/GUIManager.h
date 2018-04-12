@@ -22,6 +22,7 @@ public:
 
     void do_gui();
     void draw_corner_overlay_debug_info();
+    void draw_timeline();
 
     void set_debug_open(bool);
     bool is_debug_open() const;
@@ -34,4 +35,8 @@ private:
 
     bool m_show_imgui_demo{ false };
     bool m_show_debug_overlay{ true };
+
+
+    bool m_show_timeline{ true };
+
 };

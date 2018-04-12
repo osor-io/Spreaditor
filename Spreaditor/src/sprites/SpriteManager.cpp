@@ -13,12 +13,13 @@ void SpriteManager::shut_down() {}
 bool SpriteManager::load_spritesheet(const char * filename) {
     m_spritesheet = std::make_unique<Spritesheet>(filename);
     m_sprites = m_spritesheet->get_sprites();
-    return m_spritesheet->is_valid();
+    m_valid_sprites = m_spritesheet->is_valid();
+    return m_valid_sprites;
 }
 
 void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 
-    if (m_current_main_sprite_index >= m_sprites.size()) return;
+    if (!m_valid_sprites ||  m_current_main_sprite_index >= m_sprites.size()) return;
 
     auto main_sprite = m_sprites[m_current_main_sprite_index];
 
@@ -30,7 +31,7 @@ void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 
     //@@TODO @@DEBUG @@REMOVE
 
-    ++m_current_main_sprite_index;
-    m_current_main_sprite_index %= m_sprites.size();
+    //++m_current_main_sprite_index;
+    //m_current_main_sprite_index %= m_sprites.size();
 
 }

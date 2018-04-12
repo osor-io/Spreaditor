@@ -27,6 +27,7 @@ public:
     void set_main_sprite_zoom(float zoom) { m_main_sprite_zoom = zoom; }
     int get_current_main_sprite_index() const { return m_current_main_sprite_index; }
     void set_current_main_sprite_index(int index) { m_current_main_sprite_index = index; }
+    const std::vector<sf::Sprite>& get_sprites() { return m_sprites; }
 
     void render_main_sprite(sf::RenderTarget* render_target);
 
@@ -35,4 +36,5 @@ private:
     std::vector<sf::Sprite> m_sprites{};
     float m_main_sprite_zoom{ 10.0f };
     int m_current_main_sprite_index{ 0 };
+    bool m_valid_sprites{ false };
 };

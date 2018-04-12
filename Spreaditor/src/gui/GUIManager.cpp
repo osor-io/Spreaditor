@@ -93,38 +93,6 @@ void GUIManager::shut_down() {
 
 }
 
-void GUIManager::draw_corner_overlay_debug_info() {
-    bool open = true;
-    const float DISTANCE = 10.0f;
-    static int corner = 2;
-    auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
-    auto window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-    ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
-    if (ImGui::Begin("Debug Overlay", &open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
-    {
-        auto mouse_pos = ImGui::GetIO().MousePos;
-
-        auto real_mouse_pos = RenderManager::get().get_main_render_target()->mapPixelToCoords(sf::Vector2i(
-            gsl::narrow_cast<int>(mouse_pos.x),
-            gsl::narrow_cast<int>(mouse_pos.y)));
-
-        ImGui::Text("Mouse Position: (%6.1f,%6.1f)", real_mouse_pos.x, real_mouse_pos.y);
-        ImGui::Text("Frames Per Second: (%.1f)", (1.f / TimeManager::get().get_delta_time().asSeconds()));
-        ImGui::Text("Frame Time: (%d) ms", (TimeManager::get().get_delta_time().asMilliseconds()));
-        if (ImGui::BeginPopupContextWindow())
-        {
-            if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
-            if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
-            if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
-            if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
-            ImGui::EndPopup();
-        }
-        ImGui::End();
-    }
-    ImGui::PopStyleColor();
-}
-
 void GUIManager::set_debug_open(bool open) {
     m_debug_open = open;
 }
@@ -254,6 +222,11 @@ void GUIManager::do_gui() {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("View")) {
+            ImGui::Checkbox("Timeline", &m_show_timeline);
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("Debug")) {
             ImGui::Checkbox("Debug Overlay", &m_show_debug_overlay);
             ImGui::Checkbox("ImGui Demo", &m_show_imgui_demo);
@@ -264,8 +237,90 @@ void GUIManager::do_gui() {
 
         if (m_show_debug_overlay) draw_corner_overlay_debug_info();
         if (m_show_imgui_demo) ImGui::ShowDemoWindow();
+        if (m_show_timeline) draw_timeline();
 
         ImGui::PopFont();
     }
 }
 
+void GUIManager::draw_corner_overlay_debug_info() {
+    bool open = true;
+    const float DISTANCE = 10.0f;
+    static int corner = 2;
+    auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
+    auto window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+    ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
+    if (ImGui::Begin("Debug Overlay", &open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+    {
+        auto mouse_pos = ImGui::GetIO().MousePos;
+
+        auto real_mouse_pos = RenderManager::get().get_main_render_target()->mapPixelToCoords(sf::Vector2i(
+            gsl::narrow_cast<int>(mouse_pos.x),
+            gsl::narrow_cast<int>(mouse_pos.y)));
+
+        ImGui::Text("Mouse Position: (%6.1f,%6.1f)", real_mouse_pos.x, real_mouse_pos.y);
+        ImGui::Text("Frames Per Second: (%.1f)", (1.f / TimeManager::get().get_delta_time().asSeconds()));
+        ImGui::Text("Frame Time: (%d) ms", (TimeManager::get().get_delta_time().asMilliseconds()));
+        if (ImGui::BeginPopupContextWindow())
+        {
+            if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
+            if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
+            if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
+            if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
+            ImGui::EndPopup();
+        }
+    }
+    ImGui::End();
+    ImGui::PopStyleColor();
+}
+
+void GUIManager::draw_timeline() {
+    auto screen_size = RenderManager::get().get_main_render_target()->getSize();
+    ImGui::SetNextWindowSize(ImVec2(screen_size.x, 0));
+    if (ImGui::Begin("Timeline", nullptr,
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoTitleBar
+    )) {
+
+
+        ImGui::Text("Testing the timeline a;sdlkfja;lsdkfja;sldfjkal;sdkfja;sldkfja;lsdkfj;asldjkfal;sdkjf;alsdkfja;lsdjkfa;lsdkjf\n"
+            "a; lsdkjf; asldkfja; lsdkfjal; sdkdfjkl;geriou;dfkls;alsdfkuiasdfgk;aklsdvj;adsklfasdf;klds;fjkllaksdhjhfsdfja; ");
+
+        /*
+        @@DOING
+        
+        Trying to render horizontal columns for the sprites
+        
+        Uncomment the next region.
+        */
+        /*
+        ImGui::BeginChild("##ScrollingRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+        auto sprites = SpriteManager::get().get_sprites();
+        auto sprite_count = sprites.size();
+        ImGui::Columns(7);
+        ImGuiListClipper clipper(sprite_count);
+        while (clipper.Step()) {
+            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) {
+                ImGui::Text("Sprite Number: %d", i);
+                ImGui::Text("Sprite Number: %d", i);
+                ImGui::Text("Sprite Number: %d", i);
+                ImGui::Text("Sprite Number: %d", i);
+                ImGui::NextColumn();
+            }
+        }
+        ImGui::Columns(1);
+        auto child_height = clipper.ItemsHeight;
+        ImGui::EndChild();
+        */
+
+        auto window_height = ImGui::GetCursorPos().y /*+ 40 /*?*/;
+        ImGui::SetWindowPos(ImVec2(0, screen_size.y - window_height), true);
+    }
+    ImGui::End();
+
+}
