@@ -8,6 +8,10 @@
 #include <SFML/Graphics.hpp>
 
 
+// Both of these multiply ImGui's font size to calculate the real size.
+#define TIMELINE_SIZE 10
+#define TIMELINE_HEADER_SIZE 1
+
 class GUIManager : public Manager<GUIManager> {
     friend class CRSP<GUIManager>;
 private:
@@ -20,12 +24,15 @@ public:
     void shut_down() override;
 
 
+    void set_debug_open(bool);
+    bool is_debug_open() const;
+
     void do_gui();
     void draw_corner_overlay_debug_info();
     void draw_timeline();
+    void draw_timeline_sprite(const sf::Sprite& sprite, int sprite_index, float height);
 
-    void set_debug_open(bool);
-    bool is_debug_open() const;
+
 
 
 private:

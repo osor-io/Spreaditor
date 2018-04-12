@@ -34,7 +34,7 @@ public:
 private:
     std::unique_ptr<Spritesheet> m_spritesheet{};
     std::vector<sf::Sprite> m_sprites{};
-    float m_main_sprite_zoom{ 10.0f };
+    float m_main_sprite_zoom{ 8.0f };
     int m_current_main_sprite_index{ 0 };
     bool m_valid_sprites{ false };
 };

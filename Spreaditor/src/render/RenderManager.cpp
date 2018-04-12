@@ -38,7 +38,7 @@ void RenderManager::shut_down() {
 
 
 sf::RenderTarget* RenderManager::get_main_render_target() {
-    return m_main_target;
+    return WindowManager::get().get_window_render_target();
 }
 
 void RenderManager::set_main_target_params(sf::Vector2f center, float zoom) {

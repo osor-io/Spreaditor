@@ -40,10 +40,11 @@ void shut_down() {
 
 
 inline void tick() {
+
     TimeManager::get().begin_tick();
-
-
-
+    {    
+        WindowManager::get().manage_events();
+    }
     TimeManager::get().end_tick();
 
     /*

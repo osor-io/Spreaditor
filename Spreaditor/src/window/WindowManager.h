@@ -16,13 +16,17 @@ public:
     void start_up() override;
     void shut_down() override;
 
-    void fill_events();
 
     sf::RenderWindow* get_window_render_target();
     bool is_window_open() const;
     const std::vector<sf::Event>& get_frame_events() const;
 
     sf::WindowHandle get_window_handle();
+
+
+    void fill_events();
+
+    void manage_events();
 
 private:
     std::vector<sf::Event> m_frame_events;

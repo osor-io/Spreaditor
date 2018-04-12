@@ -42,6 +42,22 @@ void WindowManager::fill_events() {
     }
 }
 
+void WindowManager::manage_events() {
+
+    for (const auto& event : m_frame_events) {
+
+        if (event.type == sf::Event::EventType::Resized) {
+
+            if (m_window)
+                m_window->setView(sf::View(sf::FloatRect(0.f, 0.f,
+                    static_cast<float>(m_window->getSize().x),
+                    static_cast<float>(m_window->getSize().y))));
+
+        }
+    }
+
+}
+
 sf::RenderWindow * WindowManager::get_window_render_target() {
     return m_window.get();
 }

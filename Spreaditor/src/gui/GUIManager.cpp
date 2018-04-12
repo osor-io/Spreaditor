@@ -11,6 +11,7 @@
 #include "../sprites/SpriteManager.h"
 #include "../sprites/Spritesheet.h"
 
+
 GUIManager::GUIManager() {}
 
 GUIManager::~GUIManager() {}
@@ -246,7 +247,7 @@ void GUIManager::do_gui() {
 void GUIManager::draw_corner_overlay_debug_info() {
     bool open = true;
     const float DISTANCE = 10.0f;
-    static int corner = 2;
+    static int corner = 1;
     auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
     auto window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
@@ -288,39 +289,50 @@ void GUIManager::draw_timeline() {
     )) {
 
 
-        ImGui::Text("Testing the timeline a;sdlkfja;lsdkfja;sldfjkal;sdkfja;sldkfja;lsdkfj;asldjkfal;sdkjf;alsdkfja;lsdjkfa;lsdkjf\n"
-            "a; lsdkjf; asldkfja; lsdkfjal; sdkdfjkl;geriou;dfkls;alsdfkuiasdfgk;aklsdvj;adsklfasdf;klds;fjkllaksdhjhfsdfja; ");
+        ImGui::Text("Timeline");
+        //ImGui::Separator();
 
-        /*
-        @@DOING
-        
-        Trying to render horizontal columns for the sprites
-        
-        Uncomment the next region.
-        */
-        /*
-        ImGui::BeginChild("##ScrollingRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
-        auto sprites = SpriteManager::get().get_sprites();
-        auto sprite_count = sprites.size();
-        ImGui::Columns(7);
-        ImGuiListClipper clipper(sprite_count);
-        while (clipper.Step()) {
-            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) {
-                ImGui::Text("Sprite Number: %d", i);
-                ImGui::Text("Sprite Number: %d", i);
-                ImGui::Text("Sprite Number: %d", i);
-                ImGui::Text("Sprite Number: %d", i);
-                ImGui::NextColumn();
+        ImGui::BeginChild("##TimelineScrollingRegion", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * TIMELINE_SIZE), false, ImGuiWindowFlags_HorizontalScrollbar);
+        {
+            auto sprites = SpriteManager::get().get_sprites();
+            auto sprite_count = sprites.size();
+            auto timeline_sprite_height = ImGui::GetTextLineHeightWithSpacing() * (TIMELINE_SIZE - TIMELINE_HEADER_SIZE) - ImGui::GetStyle().ScrollbarSize;
+            if (sprite_count > 0) {
+
+                draw_timeline_sprite(sprites[0], 0, timeline_sprite_height);
+
+                for (int i = 1; i < sprite_count; i++)
+                {
+                    ImGui::SameLine();
+                    draw_timeline_sprite(sprites[i], i, timeline_sprite_height);
+
+                }
             }
         }
-        ImGui::Columns(1);
-        auto child_height = clipper.ItemsHeight;
         ImGui::EndChild();
-        */
 
-        auto window_height = ImGui::GetCursorPos().y /*+ 40 /*?*/;
+        auto window_height = ImGui::GetCursorPos().y;
         ImGui::SetWindowPos(ImVec2(0, screen_size.y - window_height), true);
     }
     ImGui::End();
+
+}
+
+void GUIManager::draw_timeline_sprite(const sf::Sprite& sprite, int sprite_index, float height) {
+
+    auto temp_sprite = sprite;
+    temp_sprite.setScale(
+        (height) / static_cast<float>(temp_sprite.getTextureRect().height),
+        (height) / static_cast<float>(temp_sprite.getTextureRect().height));
+    temp_sprite.setPosition(sf::Vector2f(0.f, 0.f));
+    auto sprite_id = std::string("sprite_");
+    sprite_id += sprite_index;
+    ImGui::PushID(sprite_id.c_str());
+    if (ImGui::ImageButton(temp_sprite)) {
+
+        SpriteManager::get().set_current_main_sprite_index(sprite_index);
+
+    }
+    ImGui::PopID();
 
 }
