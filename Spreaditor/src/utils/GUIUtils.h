@@ -2,6 +2,12 @@
 
 #include "imgui.h"
 
+#ifdef _WIN32
+#define IM_NEWLINE "\r\n"
+#else
+#define IM_NEWLINE "\n"
+#endif
+
 #define BEGIN_MENU_POPUP_MODAL(name)\
 if (ImGui::Button(name)) {\
     CLOG("Opened \"" name "\" Pop Up");\
@@ -10,7 +16,6 @@ if (ImGui::Button(name)) {\
 if (ImGui::BeginPopupModal(name "##Modal", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 
 #define END_MENU_POPUP_MODAL  ImGui::EndPopup();}
-
 
 #define IF_BUTTON_ALIGNED_RIGHT_FIRST(text,size)\
 const auto spacing = ImGui::GetStyle().ItemSpacing.x; \
@@ -31,4 +36,5 @@ if (ImGui::Button(text, size)) \
 
 #define END_BUTTON_ALIGNED_RIGHT_NEXT(ID) ID ## _button_width = ImGui::GetItemRectSize().x;
 
+void show_help_marker(const char* desc);
 
