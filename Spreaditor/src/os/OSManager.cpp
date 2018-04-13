@@ -47,3 +47,32 @@ std::string OSManager::user_open_file(const char* filters) {
 
     return std::move(return_string);
 }
+
+std::string OSManager::user_save_file(const char* filters) {
+
+    auto dialog_data = OPENFILENAME{};
+    char filename_buffer[MAX_OS_FILENAME_SIZE];
+    auto window_handle = WindowManager::get().get_window_handle();
+    auto file_handle = HANDLE{};
+
+    ZeroMemory(&dialog_data, sizeof(dialog_data));
+    dialog_data.lStructSize = sizeof(dialog_data);
+    dialog_data.hwndOwner = window_handle;
+    dialog_data.lpstrFile = filename_buffer;
+    dialog_data.lpstrFile[0] = '\0';
+    dialog_data.nMaxFile = MAX_OS_FILENAME_SIZE;
+    dialog_data.lpstrFilter = filters;
+    dialog_data.nFilterIndex = 1;
+    dialog_data.lpstrFileTitle = NULL;
+    dialog_data.nMaxFileTitle = 0;
+    dialog_data.lpstrInitialDir = NULL;
+    dialog_data.Flags = OFN_PATHMUSTEXIST;
+
+    auto return_string = std::string{};
+
+    if (GetSaveFileName(&dialog_data) == TRUE) {
+        return_string.append(filename_buffer);
+    }
+
+    return std::move(return_string);
+}

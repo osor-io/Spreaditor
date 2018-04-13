@@ -29,6 +29,8 @@ public:
     sf::Time end_frame();
     sf::Time get_delta_time() const ;
 
+    sf::Time get_execution_time() const;
+
     void begin_tick();
     float end_tick();
     float get_tick_ms() const;
@@ -39,6 +41,8 @@ public:
 
 private:
     std::unique_ptr<sf::Clock> m_frame_clock;
+    std::unique_ptr<sf::Clock> m_execution_clock;
+
     sf::Time m_frame_delta_time{};
     CounterType m_internal_frequency{};
 

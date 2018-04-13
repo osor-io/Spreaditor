@@ -11,6 +11,7 @@
 #include "./window/WindowManager.h"
 #include "./os/OSManager.h"
 #include "./sprites/SpriteManager.h"
+#include "./gui/GUIManager.h"
 
 
 
@@ -24,9 +25,11 @@ void start_up() {
     RenderManager::get().start_up();
     InputManager::get().start_up();
     SpriteManager::get().start_up();
+    GUIManager::get().start_up();
 }
 
 void shut_down() {
+    GUIManager::get().shut_down();
     SpriteManager::get().shut_down();
     InputManager::get().shut_down();
     RenderManager::get().shut_down();

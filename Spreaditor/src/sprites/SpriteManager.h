@@ -31,6 +31,8 @@ public:
 
     void render_main_sprite(sf::RenderTarget* render_target);
 
+    bool write_sprites_to_spritesheet(const char* spritesheet_filename) const;
+
 private:
     std::unique_ptr<Spritesheet> m_spritesheet{};
     std::vector<sf::Sprite> m_sprites{};

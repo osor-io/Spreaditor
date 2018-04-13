@@ -1,6 +1,7 @@
 #include "SpriteManager.h"
 #include "../window/WindowManager.h"
 #include "../gui/GUIManager.h"
+#include "../math/OtherMath.h"
 
 SpriteManager::SpriteManager() {}
 
@@ -19,11 +20,11 @@ bool SpriteManager::load_spritesheet(const char * filename) {
 
 void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 
-    if (!m_valid_sprites ||  m_current_main_sprite_index >= m_sprites.size()) return;
+    if (!m_valid_sprites || m_current_main_sprite_index >= m_sprites.size()) return;
 
     auto main_sprite = m_sprites[m_current_main_sprite_index];
 
-    main_sprite.setOrigin(main_sprite.getTextureRect().width/2.0f, main_sprite.getTextureRect().height / 2.0f);
+    main_sprite.setOrigin(main_sprite.getTextureRect().width / 2.0f, main_sprite.getTextureRect().height / 2.0f);
     main_sprite.setScale(m_main_sprite_zoom, m_main_sprite_zoom);
 
     auto timeline_offset = (TIMELINE_SIZE * ImGui::GetTextLineHeightWithSpacing()) / 2.f;
@@ -32,4 +33,64 @@ void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
     main_sprite.setPosition(render_target->getView().getSize().x / 2.f, render_target->getView().getSize().y / 2.f - timeline_offset + main_bar_offset);
 
     render_target->draw(main_sprite);
+}
+
+bool SpriteManager::write_sprites_to_spritesheet(const char * spritesheet_filename) const {
+
+    CLOG("Creating spritesheet with current sprites");
+
+    auto max_sprite_width = 0;
+    auto max_sprite_height = 0;
+    auto sprite_count = m_sprites.size();
+
+    for (const auto& sprite : m_sprites) {
+        if (sprite.getTextureRect().width > max_sprite_width)
+            max_sprite_width = sprite.getTextureRect().width;
+
+        if (sprite.getTextureRect().height > max_sprite_height)
+            max_sprite_height = sprite.getTextureRect().height;
+    }
+
+    auto spritesheet_side_pixel_length = next_power_of_2(sqrt(max_sprite_width*max_sprite_height*sprite_count));
+
+    auto cell_side_pixel_length = next_power_of_2(max_sprite_width > max_sprite_height ? max_sprite_width : max_sprite_height);
+
+    auto total_rows_and_cols = spritesheet_side_pixel_length / cell_side_pixel_length;
+
+    CLOG("\tSpritesheet image size: " << spritesheet_side_pixel_length << "x" << spritesheet_side_pixel_length);
+    CLOG("\tSpritesheet cell size: " << cell_side_pixel_length);
+
+
+    auto spritesheet_image = sf::Image();
+    spritesheet_image.create(spritesheet_side_pixel_length, spritesheet_side_pixel_length, sf::Color(.0f, .0f, .0f, .0f));
+
+    {
+        auto row = 0;
+        auto col = 0;
+        for (const auto& sprite : m_sprites) {
+
+            auto texture = sprite.getTexture();
+            assert(texture != nullptr);
+            
+            auto texture_image = texture->copyToImage();
+
+            auto dest_x = row * cell_side_pixel_length + (cell_side_pixel_length - sprite.getTextureRect().width);
+            auto dest_y = col * cell_side_pixel_length + (cell_side_pixel_length - sprite.getTextureRect().height);
+
+            spritesheet_image.copy(texture_image, dest_x, dest_y, sprite.getTextureRect(), true);
+
+            if (++row >= total_rows_and_cols) {
+                row = 0;
+                ++col;
+                col = col < total_rows_and_cols ? col : 0;
+            }
+        }
+    }
+
+    if (!spritesheet_image.saveToFile(spritesheet_filename)) {
+        CLOG_ERROR("Error saving the pixels to the file: " << spritesheet_filename);
+        return false;
+    }
+    CLOG("Wrote spritesheet to file: " << spritesheet_filename);
+    return true;
 }

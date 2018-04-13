@@ -13,6 +13,14 @@
 #define TIMELINE_SIZE 10
 #define TIMELINE_HEADER_SIZE 1
 
+#define CHECK_FILE_INTERVAL 100 //ms
+
+namespace config {
+
+    const auto style_filename = "style.json";
+
+}
+
 class GUIManager : public Manager<GUIManager> {
     using json = nlohmann::json;
     friend class CRSP<GUIManager>;
@@ -32,12 +40,13 @@ public:
     void do_gui();
     void draw_corner_overlay_debug_info();
     void draw_timeline();
-    void draw_timeline_sprite(const sf::Sprite& sprite, int sprite_index, float height);
     void draw_style_editor(ImGuiStyle* ref = nullptr);
 
 
 
 private:
+
+    void draw_timeline_sprite(const sf::Sprite& sprite, int sprite_index, float height);
 
     json style_to_json();
     void style_from_json(json json_style);

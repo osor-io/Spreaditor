@@ -18,66 +18,22 @@ GUIManager::~GUIManager() {}
 
 void GUIManager::start_up() {
 
-    ImGuiStyle * style = &ImGui::GetStyle();
+    if (file_exists(config::style_filename)) {
+        CLOG("Loading style from file: " << config::style_filename);
+        auto file_content = read_from_file(config::style_filename);
 
-    auto palette = config::get_rusty_palette();
+        auto json_data = json::parse(file_content, nullptr, false);
 
+        if (json_data.is_discarded()) {
+            CLOG("\tThe style file is not a valid file, ignoring style loading.");
 
-    style->WindowPadding = ImVec2(15, 15);
-    style->WindowRounding = 5.0f;
-    style->FramePadding = ImVec2(10, 5);
-    style->FrameRounding = 4.0f;
-    style->ItemSpacing = ImVec2(12, 8);
-    style->ItemInnerSpacing = ImVec2(8, 6);
-    style->IndentSpacing = 25.0f;
-    style->ScrollbarSize = 15.0f;
-    style->ScrollbarRounding = 9.0f;
-    style->GrabMinSize = 5.0f;
-    style->GrabMinSize = 5.0f;
-    style->GrabRounding = 3.0f;
+            // @@TODO: Load here a default style that is generally usable and we are happy with
 
-    style->Colors[ImGuiCol_Text] = palette[0];
-    style->Colors[ImGuiCol_TextDisabled] = palette[1];
-    style->Colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.05f, 0.07f, 0.80f);
-    style->Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
-    style->Colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
-    style->Colors[ImGuiCol_Border] = palette[1];
-    style->Colors[ImGuiCol_BorderShadow] = palette[0];
-    style->Colors[ImGuiCol_FrameBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_FrameBgActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_TitleBg] = palette[7];  //ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_TitleBgCollapsed] = palette[8]; //ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_TitleBgActive] = palette[3]; //ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
-    style->Colors[ImGuiCol_MenuBarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_ScrollbarGrab] = palette[0];
-    style->Colors[ImGuiCol_ScrollbarGrabHovered] = palette[1];
-    style->Colors[ImGuiCol_ScrollbarGrabActive] = palette[2];
-    style->Colors[ImGuiCol_CheckMark] = palette[0];
-    style->Colors[ImGuiCol_SliderGrab] = palette[0];
-    style->Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_Button] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_ButtonHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_ButtonActive] = palette[2];
-    style->Colors[ImGuiCol_Header] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_HeaderHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_HeaderActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_Column] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_ColumnHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_ColumnActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_ResizeGrip] = palette[0];
-    style->Colors[ImGuiCol_ResizeGripHovered] = palette[1];
-    style->Colors[ImGuiCol_ResizeGripActive] = palette[2];
-    style->Colors[ImGuiCol_CloseButton] = palette[0];//ImVec4(0.40f, 0.39f, 0.38f, 0.16f);
-    style->Colors[ImGuiCol_CloseButtonHovered] = palette[5];//ImVec4(0.40f, 0.39f, 0.38f, 0.39f);
-    style->Colors[ImGuiCol_CloseButtonActive] = palette[7];//ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
-    style->Colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
-    style->Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
-    style->Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
-    style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
-    style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
-    style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
+        }
+        else {
+            style_from_json(json_data);
+        }
+    }
 
     // We are not using this font right now
     /*
@@ -119,8 +75,8 @@ void GUIManager::do_gui() {
 
                 static char loading_filename[MAX_OS_FILENAME_SIZE];
 
-                ImGui::Text("Spritesheet file: ");
-                ImGui::SameLine(150);
+                ImGui::Text("Filename: ");
+                ImGui::SameLine(100);
                 ImGui::InputText("##Filename", loading_filename, MAX_OS_FILENAME_SIZE);
                 ImGui::SameLine();
                 if (ImGui::Button("Explore", ImVec2(120, 0))) {
@@ -216,7 +172,89 @@ void GUIManager::do_gui() {
             }
             END_MENU_POPUP_MODAL;
 
+            ImGui::Separator();
 
+
+
+            BEGIN_MENU_POPUP_MODAL("Export Spritesheet");
+
+            static auto filename = std::string{};
+
+            static char writing_filename[MAX_OS_FILENAME_SIZE];
+
+            ImGui::Text("Filename: ");
+            ImGui::SameLine(100);
+            ImGui::InputText("##Filename", writing_filename, MAX_OS_FILENAME_SIZE);
+            ImGui::SameLine();
+            if (ImGui::Button("Explore", ImVec2(120, 0))) {
+                filename = OSManager::get().user_save_file(\
+                    "(*.png) Portable Network Graphics\0*.png\0"
+                    "(*.bmp) Windows bitmap\0*.bmp\0"
+                    "(*.jpg) Joint Photographic Experts Group\0*.jpg\0"
+
+                );
+                assert(filename.size() < MAX_OS_FILENAME_SIZE);
+                filename.copy(writing_filename, filename.size());
+                writing_filename[filename.size()] = '\0';
+            }
+
+
+            // We check if the filename the user has written already exists
+            static auto file_already_exists = false;
+            static auto last_time_checked = .0f;
+            auto current_time = TimeManager::get().get_execution_time().asMilliseconds();
+            if (current_time - last_time_checked > CHECK_FILE_INTERVAL) {
+                last_time_checked = current_time;
+                file_already_exists = file_exists(writing_filename);
+            }
+
+            if (file_already_exists) ImGui::Text("WARNING: A File with that name already exists");
+
+
+            IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+            IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+
+                filename.clear();
+                filename.append(writing_filename);
+
+                CLOG("Writing spritesheet to: " << filename);
+
+                auto cfilename = filename.c_str();
+
+                if (!SpriteManager::get().write_sprites_to_spritesheet(cfilename)) {
+                    CLOG("An error has happened while writing the spritesheet");
+                    ImGui::OpenPopup("Error Writing Spritesheet");
+                }
+                else {
+                    CLOG("Spritesheet write completed succesfully to file: " << filename);
+                    ImGui::CloseCurrentPopup();
+                }
+
+
+            }
+            END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+            if (ImGui::BeginPopupModal("Error Writing Spritesheet"))
+            {
+                ImGui::Text("The spritesheet file could not be parsed correctly:\nPath: \"%s\"", filename.c_str());
+
+                IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+                ImGui::EndPopup();
+            }
+
+
+            //write_sprites_to_spritesheet
+            END_MENU_POPUP_MODAL;
 
 
             // ====== END OF FILE MENU ======
@@ -332,17 +370,21 @@ void GUIManager::draw_timeline_sprite(const sf::Sprite& sprite, int sprite_index
     auto sprite_id = std::string("sprite_");
     sprite_id += sprite_index;
     ImGui::PushID(sprite_id.c_str());
+
+    // @@TODO: Show a different color when this sprites is the one currently selected
     if (ImGui::ImageButton(temp_sprite)) {
-
         SpriteManager::get().set_current_main_sprite_index(sprite_index);
-
     }
-    ImGui::PopID();
 
+    // @@TODO: Draw here sprite specific information like its index
+
+    ImGui::PopID();
 }
 
 void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 
+
+    ImGui::Begin("Style Editor");
 
     // You can pass in a reference ImGuiStyle structure to compare to, revert to and save to (else it compares to an internally stored reference)
     ImGuiStyle& style = ImGui::GetStyle();
@@ -358,9 +400,12 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 
     ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.50f);
 
-    if (ImGui::ShowStyleSelector("Colors##Selector"))
+    if (ImGui::ShowStyleSelector("Color Themes##Selector")) {
         ref_saved_style = style;
-    ImGui::ShowFontSelector("Fonts##Selector");
+    }
+
+    //We only allow one font for now
+    //ImGui::ShowFontSelector("Fonts##Selector");
 
     // Simplified Settings
     if (ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f"))
@@ -384,15 +429,17 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 
     // Save To File
     if (ImGui::Button("Save To File")) {
-    
+
         auto json_style = style_to_json();
 
-        LOG(std::setw(4) << json_style);
+        CLOG("Saving style to json file: " << config::style_filename);
+
+        write_to_file(config::style_filename, json_style.dump().c_str());
 
     }
     ImGui::SameLine();
     show_help_marker("This saves the local style to a file that will be used when opening the program so the style can be maintained when opening"
-    " and closing the program again.");
+        " and closing the program again.");
 
     if (ImGui::TreeNode("Settings"))
     {
@@ -424,27 +471,7 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 
     if (ImGui::TreeNode("Colors"))
     {
-        static int output_dest = 0;
-        static bool output_only_modified = true;
-        if (ImGui::Button("Export Unsaved"))
-        {
-            if (output_dest == 0)
-                ImGui::LogToClipboard();
-            else
-                ImGui::LogToTTY();
-            ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;" IM_NEWLINE);
-            for (int i = 0; i < ImGuiCol_COUNT; i++)
-            {
-                const ImVec4& col = style.Colors[i];
-                const char* name = ImGui::GetStyleColorName(i);
-                if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
-                    ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);" IM_NEWLINE, name, 23 - (int)strlen(name), "", col.x, col.y, col.z, col.w);
-            }
-            ImGui::LogFinish();
-        }
-        ImGui::SameLine(); ImGui::PushItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0"); ImGui::PopItemWidth();
-        ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
-
+    
         ImGui::Text("Tip: Left-click on colored square to open color picker,\nRight-click to open edit options menu.");
 
         static ImGuiTextFilter filter;
@@ -482,6 +509,8 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
     }
 
     ImGui::PopItemWidth();
+
+    ImGui::End();
 }
 
 // All variables to save
@@ -613,7 +642,7 @@ GUIManager::json GUIManager::style_to_json() {
 
 void GUIManager::style_from_json(json data) {
 
-    auto style = ImGui::GetStyle();
+    auto& style = ImGui::GetStyle();
 
     {
         LOAD_STYLE_VAR(WindowPadding);
