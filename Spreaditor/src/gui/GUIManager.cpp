@@ -10,6 +10,7 @@
 #include "GUIUtils.h"
 #include "../sprites/SpriteManager.h"
 #include "../sprites/Spritesheet.h"
+#include "../colliders/ColliderManager.h"
 
 
 GUIManager::GUIManager() {}
@@ -263,6 +264,7 @@ void GUIManager::do_gui() {
 
         if (ImGui::BeginMenu("View")) {
             ImGui::Checkbox("Timeline", &m_show_timeline);
+            ImGui::Checkbox("Collider Explorer", &m_show_collider_explorer);
             ImGui::Separator();
             ImGui::Checkbox("Style Editor", &m_show_style_editor);
             ImGui::EndMenu();
@@ -274,11 +276,14 @@ void GUIManager::do_gui() {
             ImGui::EndMenu();
         }
 
+        m_main_menu_height = ImGui::GetWindowSize().y;
+
         ImGui::EndMainMenuBar();
 
         if (m_show_debug_overlay) draw_corner_overlay_debug_info();
         if (m_show_imgui_demo) ImGui::ShowDemoWindow();
         if (m_show_timeline) draw_timeline();
+        if (m_show_collider_explorer) ColliderManager::get().draw_collider_gui();
         if (m_show_style_editor) draw_style_editor();
 
 
@@ -332,7 +337,8 @@ void GUIManager::draw_timeline() {
 
 
         ImGui::Text("Timeline");
-        // @@TODO: Draw here timeline information in the same line
+        // @@TODO: Draw here timeline information in the same line.
+
         //ImGui::Separator();
 
         ImGui::BeginChild("##TimelineScrollingRegion", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * TIMELINE_SIZE), false, ImGuiWindowFlags_HorizontalScrollbar);

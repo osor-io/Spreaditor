@@ -93,6 +93,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)dep\include;C:\dep\sfml\include;$(ProjectDir)src\utils;C:\dep\GSL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SFML_STATIC;SFML_STATIC;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\dep\sfml\lib</AdditionalLibraryDirectories>
@@ -107,6 +108,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)dep\include;C:\dep\sfml\include;$(ProjectDir)src\utils;C:\dep\GSL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SFML_STATIC;SFML_STATIC;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\dep\sfml\lib</AdditionalLibraryDirectories>
@@ -123,6 +125,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)dep\include;C:\dep\sfml\include;$(ProjectDir)src\utils;C:\dep\GSL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SFML_STATIC;SFML_STATIC;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -141,6 +144,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)dep\include;C:\dep\sfml\include;$(ProjectDir)src\utils;C:\dep\GSL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SFML_STATIC;SFML_STATIC;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -150,6 +154,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\colliders\ColliderManager.cpp" />
+    <ClCompile Include="src\colliders\ColliderFactory.cpp" />
     <ClCompile Include="dep\src\detail\pugixml.cpp" />
     <ClCompile Include="dep\src\FreeFuncs.cpp" />
     <ClCompile Include="dep\src\ImageLayer.cpp" />
@@ -168,6 +174,7 @@
     <ClCompile Include="dep\src\StringCast.cpp" />
     <ClCompile Include="dep\src\TileLayer.cpp" />
     <ClCompile Include="dep\src\Tileset.cpp" />
+    <ClCompile Include="src\colliders\Colliders.cpp" />
     <ClCompile Include="src\sprites\SpriteManager.cpp" />
     <ClCompile Include="src\os\OSManager.cpp" />
     <ClCompile Include="src\gui\GUIManager.cpp" />
@@ -185,6 +192,8 @@
     <ClCompile Include="src\window\WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\colliders\ColliderManager.h" />
+    <ClInclude Include="src\colliders\ColliderFactory.h" />
     <ClInclude Include="dep\include\detail\MetaHolder.h" />
     <ClInclude Include="dep\include\detail\template_helpers.h" />
     <ClInclude Include="dep\include\imconfig.h" />
@@ -219,6 +228,7 @@
     <ClInclude Include="dep\src\detail\pugiconfig.hpp" />
     <ClInclude Include="dep\src\detail\pugixml.hpp" />
     <ClInclude Include="dep\src\miniz.h" />
+    <ClInclude Include="src\colliders\Colliders.h" />
     <ClInclude Include="src\sprites\SpriteManager.h" />
     <ClInclude Include="src\os\OSManager.h" />
     <ClInclude Include="src\gui\GUIManager.h" />

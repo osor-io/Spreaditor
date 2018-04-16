@@ -36,7 +36,8 @@ public:
 
     void set_debug_open(bool);
     bool is_debug_open() const;
-
+    float get_main_menu_height() const { return m_main_menu_height;}
+    ;
     void do_gui();
     void draw_corner_overlay_debug_info();
     void draw_timeline();
@@ -60,6 +61,9 @@ private:
 
 
     bool m_show_timeline{ true };
+    bool m_show_collider_explorer{ true };
     bool m_show_style_editor{ false };
+
+    float m_main_menu_height{ 20.f };
 
 };

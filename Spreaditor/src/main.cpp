@@ -12,7 +12,7 @@
 #include "./os/OSManager.h"
 #include "./sprites/SpriteManager.h"
 #include "./gui/GUIManager.h"
-
+#include "./colliders/ColliderManager.h"
 
 
 void start_up() {
@@ -26,9 +26,11 @@ void start_up() {
     InputManager::get().start_up();
     SpriteManager::get().start_up();
     GUIManager::get().start_up();
+    ColliderManager::get().start_up();
 }
 
 void shut_down() {
+    ColliderManager::get().shut_down();
     GUIManager::get().shut_down();
     SpriteManager::get().shut_down();
     InputManager::get().shut_down();
