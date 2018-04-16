@@ -11,9 +11,6 @@
 @@TODO
 
 - Add constructor to create a spritesheet based on a vector of sprites
-- Add functions to get size of spritesheet image
-- Store a member image with the spritesheet image. Maybe with some extra data.
-- Add function to write the spritesheet member image to a png file
 */
 
 class Spritesheet {

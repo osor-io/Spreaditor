@@ -113,8 +113,15 @@ struct ImVec2
     ImVec2() { x = y = 0.0f; }
     ImVec2(float _x, float _y) { x = _x; y = _y; }
 #ifdef IM_VEC2_CLASS_EXTRA          // Define constructor and implicit cast operators in imconfig.h to convert back<>forth from your math types and ImVec2.
-    IM_VEC2_CLASS_EXTRA
+    IM_VEC2_CLASS_EXTRA;
 #endif
+
+    ImVec2 operator+(const ImVec2& right) {
+        return ImVec2(
+            x + right.x,
+            y + right.y
+        );
+    }
 };
 
 
@@ -124,8 +131,16 @@ struct ImVec4
     ImVec4() { x = y = z = w = 0.0f; }
     ImVec4(float _x, float _y, float _z, float _w) { x = _x; y = _y; z = _z; w = _w; }
 #ifdef IM_VEC4_CLASS_EXTRA          // Define constructor and implicit cast operators in imconfig.h to convert back<>forth from your math types and ImVec4.
-    IM_VEC4_CLASS_EXTRA
+    IM_VEC4_CLASS_EXTRA;
 #endif
+
+    ImVec4 operator+(const ImVec4& right) {
+        return ImVec4(
+            x + right.x,
+            y + right.y,
+            z + right.z,
+            w + right.w);
+    }
 };
 
 #include "json.hpp"

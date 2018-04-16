@@ -75,7 +75,7 @@ void RenderManager::end_frame() {
     */
     ImGui::SFML::Update(*m_main_target, DELTA_TIME);
 
-    // @@TODO: Here draw ImGUI stuff
+    // Here we draw ImGUI stuff
     GUIManager::get().do_gui();
 
     /*

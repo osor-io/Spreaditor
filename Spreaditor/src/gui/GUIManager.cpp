@@ -332,6 +332,7 @@ void GUIManager::draw_timeline() {
 
 
         ImGui::Text("Timeline");
+        // @@TODO: Draw here timeline information in the same line
         //ImGui::Separator();
 
         ImGui::BeginChild("##TimelineScrollingRegion", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * TIMELINE_SIZE), false, ImGuiWindowFlags_HorizontalScrollbar);
@@ -371,12 +372,25 @@ void GUIManager::draw_timeline_sprite(const sf::Sprite& sprite, int sprite_index
     sprite_id += sprite_index;
     ImGui::PushID(sprite_id.c_str());
 
-    // @@TODO: Show a different color when this sprites is the one currently selected
+
+    auto previous_pos = ImGui::GetCursorPos();
+    ImGui::SetCursorPos(previous_pos + ImGui::GetStyle().FramePadding);
+    ImGui::Text("%d", sprite_index);
+    ImGui::SetCursorPos(previous_pos);
+
+    auto is_main_sprite = sprite_index == SpriteManager::get().get_current_main_sprite_index();
+
+    if (is_main_sprite) {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+    }
+
     if (ImGui::ImageButton(temp_sprite)) {
         SpriteManager::get().set_current_main_sprite_index(sprite_index);
     }
 
-    // @@TODO: Draw here sprite specific information like its index
+    if (is_main_sprite) {
+        ImGui::PopStyleColor();
+    }
 
     ImGui::PopID();
 }
@@ -471,7 +485,7 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 
     if (ImGui::TreeNode("Colors"))
     {
-    
+
         ImGui::Text("Tip: Left-click on colored square to open color picker,\nRight-click to open edit options menu.");
 
         static ImGuiTextFilter filter;
