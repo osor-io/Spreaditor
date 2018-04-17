@@ -59,6 +59,25 @@ bool GUIManager::is_debug_open() const {
     return m_debug_open;
 }
 
+void GUIManager::update(){
+
+    auto mouse_pos = ImGui::GetIO().MousePos;
+
+    m_global_mouse_pos = RenderManager::get().get_main_render_target()->mapPixelToCoords(sf::Vector2i(
+        gsl::narrow_cast<int>(mouse_pos.x),
+        gsl::narrow_cast<int>(mouse_pos.y)));
+
+    const auto& main_sprite = SpriteManager::get().get_cached_drawn_main_sprite();
+    const auto& sprite_bounds = main_sprite.getGlobalBounds();
+    m_is_mouse_inside_sprite = sprite_bounds.contains(m_global_mouse_pos);
+
+    m_sprite_mouse_position = sf::Vector2f(
+        ((m_global_mouse_pos.x - sprite_bounds.left) / sprite_bounds.width)* main_sprite.getTextureRect().width,
+        ((m_global_mouse_pos.y - sprite_bounds.top) / sprite_bounds.height)* main_sprite.getTextureRect().height
+    );
+
+}
+
 void GUIManager::do_gui() {
 
     if (m_debug_open) {
@@ -280,12 +299,11 @@ void GUIManager::do_gui() {
 
         ImGui::EndMainMenuBar();
 
-        if (m_show_debug_overlay) draw_corner_overlay_debug_info();
         if (m_show_imgui_demo) ImGui::ShowDemoWindow();
         if (m_show_timeline) draw_timeline();
         if (m_show_collider_explorer) ColliderManager::get().draw_collider_gui();
         if (m_show_style_editor) draw_style_editor();
-
+        if (m_show_debug_overlay) draw_corner_overlay_debug_info();
 
         ImGui::PopFont();
     }
@@ -301,13 +319,17 @@ void GUIManager::draw_corner_overlay_debug_info() {
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
     if (ImGui::Begin("Debug Overlay", &open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
     {
-        auto mouse_pos = ImGui::GetIO().MousePos;
+        
+        ImGui::Text("Mouse Position (Global): (%6.1f,%6.1f)", m_global_mouse_pos.x, m_global_mouse_pos.y);
 
-        auto real_mouse_pos = RenderManager::get().get_main_render_target()->mapPixelToCoords(sf::Vector2i(
-            gsl::narrow_cast<int>(mouse_pos.x),
-            gsl::narrow_cast<int>(mouse_pos.y)));
+        if (m_is_mouse_inside_sprite) {
 
-        ImGui::Text("Mouse Position: (%6.1f,%6.1f)", real_mouse_pos.x, real_mouse_pos.y);
+            ImGui::Text("Mouse Position (Sprite): (%6.1f,%6.1f)", m_sprite_mouse_position.x, m_sprite_mouse_position.y);
+        }
+        else {
+            ImGui::Text("Mouse not on top of main sprite");
+        }
+
         ImGui::Text("Frames Per Second: (%.1f)", (1.f / TimeManager::get().get_delta_time().asSeconds()));
         ImGui::Text("Frame Time: (%d) ms", (TimeManager::get().get_delta_time().asMilliseconds()));
         if (ImGui::BeginPopupContextWindow())

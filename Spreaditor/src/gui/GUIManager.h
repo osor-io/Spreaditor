@@ -36,13 +36,16 @@ public:
 
     void set_debug_open(bool);
     bool is_debug_open() const;
-    float get_main_menu_height() const { return m_main_menu_height;}
-    ;
+    float get_main_menu_height() const { return m_main_menu_height; }
+    const sf::Vector2f& get_global_mouse_pos() const { return m_global_mouse_pos; }
+    const sf::Vector2f& get_sprite_mouse_pos() const { return m_sprite_mouse_position; }
+    bool is_mouse_inside_sprite() const { return m_is_mouse_inside_sprite; }
+
+    void update();
     void do_gui();
     void draw_corner_overlay_debug_info();
     void draw_timeline();
     void draw_style_editor(ImGuiStyle* ref = nullptr);
-
 
 
 private:
@@ -65,5 +68,9 @@ private:
     bool m_show_style_editor{ false };
 
     float m_main_menu_height{ 20.f };
+
+    sf::Vector2f m_global_mouse_pos{};
+    sf::Vector2f m_sprite_mouse_position{};
+    bool m_is_mouse_inside_sprite{ false };
 
 };

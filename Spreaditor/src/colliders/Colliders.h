@@ -9,6 +9,7 @@
 
 #define ATTRIBUTE_TYPES std::string, int, float, bool
 
+struct Vec4f;
 struct ColliderType;
 struct AttributeType;
 struct ColliderInstance;
@@ -18,12 +19,21 @@ using SpriteIDType = int;
 using ColliderCoordinateType = float;
 
 
+struct Vec4f {
+    float x, y, z, w;
+};
+
 struct ColliderType {
     std::string name;
     std::vector<AttributeType> attributes;
-   
+    Vec4f default_color;
+
     bool operator==(const ColliderType& other) const {
         return (name.compare(other.name) == 0);
+    }
+
+    const bool operator<(const ColliderType &other) const {
+        return (name < other.name);
     }
 };
 
@@ -41,6 +51,7 @@ struct ColliderInstance {
     std::string name;
     std::vector<AttributeInstance> attributes;
     std::unordered_map<SpriteIDType, std::vector<ColliderRect>> rects;
+    Vec4f color;
 
     bool operator==(const ColliderInstance& other) const {
         return (name.compare(other.name) == 0);

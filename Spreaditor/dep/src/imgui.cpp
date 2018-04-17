@@ -6787,16 +6787,7 @@ bool ImGui::CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags)
     if (window->SkipItems)
         return false;
 
-    //@@CHANGED
-    ImGui::PushStyleColor(ImGuiCol_Header, (ImVec4)ImColor(255, 233, 221));
-    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, (ImVec4)ImColor(255, 218, 197));
-    ImGui::PushStyleColor(ImGuiCol_HeaderActive, (ImVec4)ImColor(255, 127, 74));
-    ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(10, 10, 10));
-
     auto ret = TreeNodeBehavior(window->GetID(label), flags | ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_NoTreePushOnOpen, label);
-
-    //@@CHANGED
-    ImGui::PopStyleColor(4);
 
     return ret;
 }

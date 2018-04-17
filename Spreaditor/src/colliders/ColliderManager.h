@@ -3,14 +3,17 @@
 #include <Manager.h>
 #include "Colliders.h"
 #include "ColliderFactory.h"
-#include <unordered_map>
-#include <unordered_set>
+#include <set>
+#include <map>
+#include <utility>
 
+#define MAX_COLLIDER_NAME_SIZE 512
+#define ALPHA_LIMIT 0.6
 
 class ColliderManager : public Manager<ColliderManager> {
     friend class CRSP<ColliderManager>;
-    using InstanceContainer = std::unordered_set<ColliderInstance>;
-    using ColliderContainer = std::unordered_map<ColliderType, InstanceContainer>;
+    using InstanceContainer = std::set<ColliderInstance>;
+    using ColliderContainer = std::map<ColliderType, InstanceContainer>;
 private:
     ColliderManager();
     ~ColliderManager();

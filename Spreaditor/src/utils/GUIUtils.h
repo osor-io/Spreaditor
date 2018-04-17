@@ -36,5 +36,38 @@ if (ImGui::Button(text, size)) \
 
 #define END_BUTTON_ALIGNED_RIGHT_NEXT(ID) ID ## _button_width = ImGui::GetItemRectSize().x;
 
+
+
+
+
+
+
+#define INIT_GENERAL_ERROR_POPUP \
+static auto error_message = std::string{};
+
+#define SET_GENERAL_ERROR_POPUP_MESSAGE(msg)\
+{auto ss = std::stringstream{}; ss << msg; error_message = ss.str();}
+
+#define DEFINE_GENERAL_ERROR_POPUP \
+if (ImGui::BeginPopupModal("Error##GeneralErrorPopup")) { \
+ImGui::TextWrapped("Ooops! %s", error_message.c_str());\
+IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))\
+{\
+ImGui::CloseCurrentPopup();\
+}\
+END_BUTTON_ALIGNED_RIGHT_FIRST;\
+ImGui::EndPopup();\
+}
+
+#define OPEN_GENERAL_ERROR_POPUP \
+ImGui::OpenPopup("Error##GeneralErrorPopup");
+
+
+
+
+
+
+
 void show_help_marker(const char* desc);
 
+void button_to_popup(const char* name, std::function<void()> popup_content);

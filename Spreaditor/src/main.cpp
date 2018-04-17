@@ -49,6 +49,7 @@ inline void tick() {
     TimeManager::get().begin_tick();
     {    
         WindowManager::get().manage_events();
+        GUIManager::get().update();
     }
     TimeManager::get().end_tick();
 
