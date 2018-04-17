@@ -26,7 +26,7 @@ void button_to_popup(const char * name, std::function<void()> popup_content){
         ImGui::OpenPopup(popup_str.c_str());
     }
 
-    if (ImGui::BeginPopupModal(popup_str.c_str()))
+    if (ImGui::BeginPopupModal(popup_str.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         popup_content();
 

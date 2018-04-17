@@ -2,12 +2,23 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <variant>
 #include <typeindex>
 #include <memory>
 #include <unordered_map>
 
-#define ATTRIBUTE_TYPES std::string, int, float, bool
+#define ATTRIBUTE_VALUE_TYPES std::string, int, float, bool
+
+using AttributeValueType = int;
+
+enum ATTRIBUTE_VALUE_TYPE_ {
+    ATTRIBUTE_TYPE_INT = 0,
+    ATTRIBUTE_TYPE_FLOAT,
+    ATTRIBUTE_TYPE_BOOL,
+    ATTRIBUTE_TYPE_STRING,
+    ATTRIBUTE_TYPES_COUNT,
+};
 
 struct Vec4f;
 struct ColliderType;
@@ -25,7 +36,7 @@ struct Vec4f {
 
 struct ColliderType {
     std::string name;
-    std::vector<AttributeType> attributes;
+    std::set<AttributeType> attributes;
     Vec4f default_color;
 
     bool operator==(const ColliderType& other) const {
@@ -39,33 +50,44 @@ struct ColliderType {
 
 struct AttributeType {
     std::string name;
-    std::variant<ATTRIBUTE_TYPES> default_value;
-    std::type_index type;
+    std::variant<ATTRIBUTE_VALUE_TYPES> default_value;
+    AttributeValueType type;
 
     bool operator==(const AttributeType& other) const {
         return (name.compare(other.name) == 0);
+    }
+
+    const bool operator<(const AttributeType &other) const {
+        return (name < other.name);
     }
 };
 
 struct ColliderInstance {
     std::string name;
-    std::vector<AttributeInstance> attributes;
+    std::set<AttributeInstance> attributes;
     std::unordered_map<SpriteIDType, std::vector<ColliderRect>> rects;
     Vec4f color;
 
     bool operator==(const ColliderInstance& other) const {
         return (name.compare(other.name) == 0);
     }
+
+    const bool operator<(const ColliderInstance &other) const {
+        return (name < other.name);
+    }
 };
 
 struct AttributeInstance {
-    AttributeInstance(std::type_index type) : type(type) {}
     std::string name;
-    std::variant<ATTRIBUTE_TYPES> value;
-    std::type_index type;
+    std::variant<ATTRIBUTE_VALUE_TYPES> value;
+    AttributeValueType type;
 
     bool operator==(const AttributeInstance& other) const {
         return (name.compare(other.name) == 0);
+    }
+
+    const bool operator<(const AttributeInstance &other) const {
+        return (name < other.name);
     }
 };
 
@@ -76,6 +98,11 @@ struct ColliderRect {
     ColliderCoordinateType height;
 };
 
+
+
+/**
+    Functions used to hash our collider structures
+*/
 namespace std {
 
     template <>
@@ -83,7 +110,6 @@ namespace std {
     {
         size_t operator()(const ColliderType& k) const
         {
-            // Compute individual hash values for two data members and combine them using XOR and bit shifting
             return ((hash<string>()(k.name)));
         }
     };
@@ -93,7 +119,24 @@ namespace std {
     {
         size_t operator()(const ColliderInstance& k) const
         {
-            // Compute individual hash values for two data members and combine them using XOR and bit shifting
+            return ((hash<string>()(k.name)));
+        }
+    };
+
+    template <>
+    struct hash<AttributeType>
+    {
+        size_t operator()(const AttributeType& k) const
+        {
+            return ((hash<string>()(k.name)));
+        }
+    };
+
+    template <>
+    struct hash<AttributeInstance>
+    {
+        size_t operator()(const AttributeInstance& k) const
+        {
             return ((hash<string>()(k.name)));
         }
     };
