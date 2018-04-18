@@ -1,5 +1,9 @@
 #include <CppCoreCheck/Warnings.h>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#include <windows.h>
+#endif
+
 #pragma warning(push, 0)
 #pragma warning(disable: 26439 26432 ALL_CPPCORECHECK_WARNINGS)
 
@@ -3037,6 +3041,50 @@ void ImGui::Render()
         // Draw software mouse cursor if requested
         if (g.IO.MouseDrawCursor)
         {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+
+            static auto hCursorHand = LoadCursor(NULL, IDC_HAND);
+            static auto hCursorArrow = LoadCursor(NULL, IDC_ARROW);
+            static auto hCursorWE = LoadCursor(NULL, IDC_SIZEWE);
+            static auto hCursorNS = LoadCursor(NULL, IDC_SIZENS);
+            static auto hCursorNESW = LoadCursor(NULL, IDC_SIZENESW);
+            static auto hCursorNWSE = LoadCursor(NULL, IDC_SIZENWSE);
+            static auto hCursorText = LoadCursor(NULL, IDC_IBEAM);
+
+
+            switch (g.MouseCursor) {
+
+            case ImGuiMouseCursor_None:
+                SetCursor(NULL);
+                break;
+            case ImGuiMouseCursor_Arrow:
+                SetCursor(hCursorArrow);
+                break;
+            case ImGuiMouseCursor_TextInput:
+                SetCursor(hCursorText);
+                break;
+            case ImGuiMouseCursor_Move:
+                SetCursor(hCursorArrow);
+                break;
+            case ImGuiMouseCursor_ResizeNS:
+                SetCursor(hCursorNS);
+                break;
+            case ImGuiMouseCursor_ResizeEW:
+                SetCursor(hCursorWE);
+                break;
+            case ImGuiMouseCursor_ResizeNESW:
+                SetCursor(hCursorNESW);
+                break;
+            case ImGuiMouseCursor_ResizeNWSE:
+                SetCursor(hCursorNWSE);
+                break;
+            default:
+                SetCursor(hCursorArrow);
+                break;
+            }
+
+#else
+
             const ImGuiMouseCursorData& cursor_data = g.MouseCursorData[g.MouseCursor];
             const ImVec2 pos = g.IO.MousePos - cursor_data.HotOffset;
             const ImVec2 size = cursor_data.Size;
@@ -3047,7 +3095,8 @@ void ImGui::Render()
             g.OverlayDrawList.AddImage(tex_id, pos, pos + size, cursor_data.TexUvMin[1], cursor_data.TexUvMax[1], IM_COL32(0, 0, 0, 255));       // Black border
             g.OverlayDrawList.AddImage(tex_id, pos, pos + size, cursor_data.TexUvMin[0], cursor_data.TexUvMax[0], IM_COL32(255, 255, 255, 255)); // White fill
             g.OverlayDrawList.PopTextureID();
-        }
+#endif
+            }
         if (!g.OverlayDrawList.VtxBuffer.empty())
             AddDrawListToRenderList(g.RenderDrawLists[0], &g.OverlayDrawList);
 
@@ -3061,8 +3110,8 @@ void ImGui::Render()
         // Render. If user hasn't set a callback then they may retrieve the draw data via GetDrawData()
         if (g.RenderDrawData.CmdListsCount > 0 && g.IO.RenderDrawListsFn != NULL)
             g.IO.RenderDrawListsFn(&g.RenderDrawData);
+        }
     }
-}
 
 const char* ImGui::FindRenderedTextEnd(const char* text, const char* text_end)
 {
@@ -4692,8 +4741,10 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
             // Handle resize for: Resize Grips, Borders, Gamepad
             int border_held = -1;
             ImU32 resize_grip_col[4] = { 0 };
+
             const int resize_grip_count = (flags & ImGuiWindowFlags_ResizeFromAnySide) ? 2 : 1; // 4
             const int resize_border_count = (flags & ImGuiWindowFlags_ResizeFromAnySide) ? 4 : 0;
+
 
             const float grip_draw_size = (float)(int)ImMax(g.FontSize * 1.35f, window_rounding + 1.0f + g.FontSize * 0.2f);
             const float grip_hover_size = (float)(int)(grip_draw_size * 0.75f);
@@ -4706,6 +4757,14 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                 PushID("#RESIZE");
                 for (int resize_grip_n = 0; resize_grip_n < resize_grip_count; resize_grip_n++)
                 {
+
+                    //@@CHANGED
+                    {
+                        if (flags & ImGuiWindowFlags_RestrictResizeToLeftSide) {
+                            if (resize_grip_n == 0) continue;
+                        }
+                    }
+
                     const ImGuiResizeGripDef& grip = resize_grip_def[resize_grip_n];
                     const ImVec2 corner = ImLerp(window->Pos, window->Pos + window->Size, grip.CornerPos);
 
@@ -4735,6 +4794,14 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                 }
                 for (int border_n = 0; border_n < resize_border_count; border_n++)
                 {
+
+                    //@@CHANGED
+                    {
+                        if (flags & ImGuiWindowFlags_RestrictResizeToLeftSide) {
+                            if (border_n != 3 && border_n != 2) continue;
+                        }
+                    }
+
                     const float BORDER_SIZE = 5.0f;          // FIXME: Only works _inside_ window because of HoveredWindow check.
                     const float BORDER_APPEAR_TIMER = 0.05f; // Reduce visual noise
                     bool hovered, held;
@@ -11591,7 +11658,7 @@ static void ImeSetInputScreenPosFn_DefaultImpl(int x, int y)
             cf.ptCurrentPos.y = y;
             cf.dwStyle = CFS_FORCE_POSITION;
             ImmSetCompositionWindow(himc, &cf);
-        }
+}
 }
 
 #else
@@ -11756,7 +11823,7 @@ void from_json(const json& j, ImVec2& p) {
 }
 
 void to_json(nlohmann::json& j, const ImVec4& vec) {
-    j = json{ { "x", vec.x },{ "y", vec.y },{ "z", vec.z },{ "w", vec.w }};
+    j = json{ { "x", vec.x },{ "y", vec.y },{ "z", vec.z },{ "w", vec.w } };
 }
 
 void from_json(const json& j, ImVec4& p) {

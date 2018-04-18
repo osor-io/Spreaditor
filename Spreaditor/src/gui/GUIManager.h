@@ -37,6 +37,7 @@ public:
     void set_debug_open(bool);
     bool is_debug_open() const;
     float get_main_menu_height() const { return m_main_menu_height; }
+    float get_timeline_height() const { return m_timeline_height; }
     const sf::Vector2f& get_global_mouse_pos() const { return m_global_mouse_pos; }
     const sf::Vector2f& get_sprite_mouse_pos() const { return m_sprite_mouse_position; }
     bool is_mouse_inside_sprite() const { return m_is_mouse_inside_sprite; }
@@ -68,9 +69,12 @@ private:
     bool m_show_style_editor{ false };
 
     float m_main_menu_height{ 20.f };
+    float m_timeline_height{ 200.0f };
 
     sf::Vector2f m_global_mouse_pos{};
     sf::Vector2f m_sprite_mouse_position{};
     bool m_is_mouse_inside_sprite{ false };
+
+    float m_scaling_factor{ 1.0f };
 
 };

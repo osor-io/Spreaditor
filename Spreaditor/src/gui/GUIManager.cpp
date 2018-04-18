@@ -44,6 +44,8 @@ void GUIManager::start_up() {
     ImGui::SFML::UpdateFontTexture();
     */
 
+    ImGui::GetIO().MouseDrawCursor = true;
+
 }
 
 void GUIManager::shut_down() {
@@ -59,176 +61,72 @@ bool GUIManager::is_debug_open() const {
     return m_debug_open;
 }
 
-void GUIManager::update(){
+void GUIManager::update() {
 
-    auto mouse_pos = ImGui::GetIO().MousePos;
+    // Mouse Updates
+    {
+        auto mouse_pos = ImGui::GetIO().MousePos;
 
-    m_global_mouse_pos = RenderManager::get().get_main_render_target()->mapPixelToCoords(sf::Vector2i(
-        gsl::narrow_cast<int>(mouse_pos.x),
-        gsl::narrow_cast<int>(mouse_pos.y)));
+        m_global_mouse_pos = RenderManager::get().get_main_render_target()->mapPixelToCoords(sf::Vector2i(
+            gsl::narrow_cast<int>(mouse_pos.x),
+            gsl::narrow_cast<int>(mouse_pos.y)));
 
-    const auto& main_sprite = SpriteManager::get().get_cached_drawn_main_sprite();
-    const auto& sprite_bounds = main_sprite.getGlobalBounds();
-    m_is_mouse_inside_sprite = sprite_bounds.contains(m_global_mouse_pos);
+        const auto& main_sprite = SpriteManager::get().get_cached_drawn_main_sprite();
+        const auto& sprite_bounds = main_sprite.getGlobalBounds();
+        m_is_mouse_inside_sprite = sprite_bounds.contains(m_global_mouse_pos);
 
-    m_sprite_mouse_position = sf::Vector2f(
-        ((m_global_mouse_pos.x - sprite_bounds.left) / sprite_bounds.width)* main_sprite.getTextureRect().width,
-        ((m_global_mouse_pos.y - sprite_bounds.top) / sprite_bounds.height)* main_sprite.getTextureRect().height
-    );
+        m_sprite_mouse_position = sf::Vector2f(
+            ((m_global_mouse_pos.x - sprite_bounds.left) / sprite_bounds.width)* main_sprite.getTextureRect().width,
+            ((m_global_mouse_pos.y - sprite_bounds.top) / sprite_bounds.height)* main_sprite.getTextureRect().height
+        );
+
+
+        if (ImGui::GetIO().MouseDrawCursor)
+            SetCursor(NULL);
+    }
+
+    // Scaling
+    {
+        ImGui::GetIO().FontGlobalScale = m_scaling_factor;
+        ImGui::SetSamelineScaling(m_scaling_factor);
+        // @@TODO: Scale also the places where I set pixels exactly like in the samelines
+    }
+
 
 }
 
 void GUIManager::do_gui() {
 
-    if (m_debug_open) {
+    ImGui::PushFont(m_font);
 
-        ImGui::PushFont(m_font);
+    ImGui::BeginMainMenuBar();
 
-        ImGui::BeginMainMenuBar();
+    if (ImGui::BeginMenu("File")) {
 
-        if (ImGui::BeginMenu("File")) {
-
-            BEGIN_MENU_POPUP_MODAL("New Project From Spritesheet");
-            {
-
-                static auto filename = std::string{};
-
-                static char loading_filename[MAX_OS_FILENAME_SIZE];
-
-                ImGui::Text("Filename: ");
-                ImGui::SameLine(100);
-                ImGui::InputText("##Filename", loading_filename, MAX_OS_FILENAME_SIZE);
-                ImGui::SameLine();
-                if (ImGui::Button("Explore", ImVec2(120, 0))) {
-                    filename = OSManager::get().user_open_file(\
-                        "(*.png) Portable Network Graphics\0*.png\0"
-                        "(*.bmp) Windows bitmap\0*.bmp\0"
-                        "(*.jpg) Joint Photographic Experts Group\0*.jpg\0"
-
-                    );
-                    assert(filename.size() < MAX_OS_FILENAME_SIZE);
-                    filename.copy(loading_filename, filename.size());
-                    loading_filename[filename.size()] = '\0';
-                }
-
-                ImGui::TextWrapped("This will close the current project without keeping unsaved changes.");
-
-
-                IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
-                {
-                    ImGui::CloseCurrentPopup();
-                }
-                END_BUTTON_ALIGNED_RIGHT_FIRST;
-
-                IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
-
-                    filename.clear();
-                    filename.append(loading_filename);
-
-                    CLOG("Loading spritesheet from " << filename);
-
-                    auto cfilename = filename.c_str();
-
-                    if (!file_exists(cfilename)) {
-                        CLOG_ERROR("Incorrect File Path");
-                        ImGui::OpenPopup("Incorrect File Path");
-                    }
-                    else {
-
-                        auto loaded = SpriteManager::get().load_spritesheet(cfilename);
-
-                        auto spritesheet = SpriteManager::get().get_spritesheet();
-
-                        if (!loaded || !spritesheet) {
-                            CLOG_ERROR("Incorrect Spritesheet");
-                            ImGui::OpenPopup("Incorrect Spritesheet");
-                        }
-                        else {
-
-                            /*
-                            @@TODO
-
-                            Check why these are getting logged into the file but yes into the console
-                            */
-                            CLOG("\tSpritesheet rows: " << spritesheet->get_rows());
-                            CLOG("\tSpritesheet columns: " << spritesheet->get_cols());
-                            CLOG("\tSprite width: " << spritesheet->get_sprite_width());
-                            CLOG("\tSprite height: " << spritesheet->get_sprite_height());
-                            CLOG("\tAmount of sprites read: " << spritesheet->get_sprites().size());
-
-                            CLOG("Correctly loaded spritesheet from " << filename);
-                            ImGui::CloseCurrentPopup();
-                        }
-                    }
-                }
-                END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
-
-                if (ImGui::BeginPopupModal("Incorrect File Path"))
-                {
-                    ImGui::Text("The spritesheet file you are trying to open doesn't exist:\nPath: \"%s\"", filename.c_str());
-
-                    IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
-                    {
-                        ImGui::CloseCurrentPopup();
-                    }
-                    END_BUTTON_ALIGNED_RIGHT_FIRST;
-
-                    ImGui::EndPopup();
-                }
-
-                if (ImGui::BeginPopupModal("Incorrect Spritesheet"))
-                {
-                    ImGui::Text("The spritesheet file could not be parsed correctly:\nPath: \"%s\"", filename.c_str());
-
-                    IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
-                    {
-                        ImGui::CloseCurrentPopup();
-                    }
-                    END_BUTTON_ALIGNED_RIGHT_FIRST;
-
-                    ImGui::EndPopup();
-                }
-
-            }
-            END_MENU_POPUP_MODAL;
-
-            ImGui::Separator();
-
-
-
-            BEGIN_MENU_POPUP_MODAL("Export Spritesheet");
+        BEGIN_MENU_POPUP_MODAL("New Project From Spritesheet");
+        {
 
             static auto filename = std::string{};
 
-            static char writing_filename[MAX_OS_FILENAME_SIZE];
+            static char loading_filename[MAX_OS_FILENAME_SIZE];
 
             ImGui::Text("Filename: ");
-            ImGui::SameLine(100);
-            ImGui::InputText("##Filename", writing_filename, MAX_OS_FILENAME_SIZE);
+            ImGui::SameLine();
+            ImGui::InputText("##Filename", loading_filename, MAX_OS_FILENAME_SIZE);
             ImGui::SameLine();
             if (ImGui::Button("Explore", ImVec2(120, 0))) {
-                filename = OSManager::get().user_save_file(\
+                filename = OSManager::get().user_open_file(\
                     "(*.png) Portable Network Graphics\0*.png\0"
                     "(*.bmp) Windows bitmap\0*.bmp\0"
                     "(*.jpg) Joint Photographic Experts Group\0*.jpg\0"
 
                 );
                 assert(filename.size() < MAX_OS_FILENAME_SIZE);
-                filename.copy(writing_filename, filename.size());
-                writing_filename[filename.size()] = '\0';
+                filename.copy(loading_filename, filename.size());
+                loading_filename[filename.size()] = '\0';
             }
 
-
-            // We check if the filename the user has written already exists
-            static auto file_already_exists = false;
-            static auto last_time_checked = .0f;
-            auto current_time = TimeManager::get().get_execution_time().asMilliseconds();
-            if (current_time - last_time_checked > CHECK_FILE_INTERVAL) {
-                last_time_checked = current_time;
-                file_already_exists = file_exists(writing_filename);
-            }
-
-            if (file_already_exists) ImGui::Text("WARNING: A File with that name already exists");
+            ImGui::TextWrapped("This will close the current project without keeping unsaved changes.");
 
 
             IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
@@ -240,26 +138,60 @@ void GUIManager::do_gui() {
             IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
 
                 filename.clear();
-                filename.append(writing_filename);
+                filename.append(loading_filename);
 
-                CLOG("Writing spritesheet to: " << filename);
+                CLOG("Loading spritesheet from " << filename);
 
                 auto cfilename = filename.c_str();
 
-                if (!SpriteManager::get().write_sprites_to_spritesheet(cfilename)) {
-                    CLOG("An error has happened while writing the spritesheet");
-                    ImGui::OpenPopup("Error Writing Spritesheet");
+                if (!file_exists(cfilename)) {
+                    CLOG_ERROR("Incorrect File Path");
+                    ImGui::OpenPopup("Incorrect File Path");
                 }
                 else {
-                    CLOG("Spritesheet write completed succesfully to file: " << filename);
-                    ImGui::CloseCurrentPopup();
+
+                    auto loaded = SpriteManager::get().load_spritesheet(cfilename);
+
+                    auto spritesheet = SpriteManager::get().get_spritesheet();
+
+                    if (!loaded || !spritesheet) {
+                        CLOG_ERROR("Incorrect Spritesheet");
+                        ImGui::OpenPopup("Incorrect Spritesheet");
+                    }
+                    else {
+
+                        /*
+                        @@TODO
+
+                        Check why these are getting logged into the file but yes into the console
+                        */
+                        CLOG("\tSpritesheet rows: " << spritesheet->get_rows());
+                        CLOG("\tSpritesheet columns: " << spritesheet->get_cols());
+                        CLOG("\tSprite width: " << spritesheet->get_sprite_width());
+                        CLOG("\tSprite height: " << spritesheet->get_sprite_height());
+                        CLOG("\tAmount of sprites read: " << spritesheet->get_sprites().size());
+
+                        CLOG("Correctly loaded spritesheet from " << filename);
+                        ImGui::CloseCurrentPopup();
+                    }
                 }
-
-
             }
             END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
 
-            if (ImGui::BeginPopupModal("Error Writing Spritesheet"))
+            if (ImGui::BeginPopupModal("Incorrect File Path"))
+            {
+                ImGui::Text("The spritesheet file you are trying to open doesn't exist:\nPath: \"%s\"", filename.c_str());
+
+                IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+                ImGui::EndPopup();
+            }
+
+            if (ImGui::BeginPopupModal("Incorrect Spritesheet"))
             {
                 ImGui::Text("The spritesheet file could not be parsed correctly:\nPath: \"%s\"", filename.c_str());
 
@@ -272,48 +204,145 @@ void GUIManager::do_gui() {
                 ImGui::EndPopup();
             }
 
+        }
+        END_MENU_POPUP_MODAL;
 
-            //write_sprites_to_spritesheet
-            END_MENU_POPUP_MODAL;
+        ImGui::Separator();
 
 
-            // ====== END OF FILE MENU ======
-            ImGui::EndMenu();
+
+        BEGIN_MENU_POPUP_MODAL("Export Spritesheet");
+
+        static auto filename = std::string{};
+
+        static char writing_filename[MAX_OS_FILENAME_SIZE];
+
+        ImGui::Text("Filename: ");
+        ImGui::SameLine();
+        ImGui::InputText("##Filename", writing_filename, MAX_OS_FILENAME_SIZE);
+        ImGui::SameLine();
+        if (ImGui::Button("Explore", ImVec2(120, 0))) {
+            filename = OSManager::get().user_save_file(\
+                "(*.png) Portable Network Graphics\0*.png\0"
+                "(*.bmp) Windows bitmap\0*.bmp\0"
+                "(*.jpg) Joint Photographic Experts Group\0*.jpg\0"
+
+            );
+            assert(filename.size() < MAX_OS_FILENAME_SIZE);
+            filename.copy(writing_filename, filename.size());
+            writing_filename[filename.size()] = '\0';
         }
 
-        if (ImGui::BeginMenu("View")) {
-            ImGui::Checkbox("Timeline", &m_show_timeline);
-            ImGui::Checkbox("Collider Explorer", &m_show_collider_explorer);
-            ImGui::Separator();
-            ImGui::Checkbox("Style Editor", &m_show_style_editor);
-            ImGui::EndMenu();
+
+        // We check if the filename the user has written already exists
+        static auto file_already_exists = false;
+        static auto last_time_checked = .0f;
+        auto current_time = TimeManager::get().get_execution_time().asMilliseconds();
+        if (current_time - last_time_checked > CHECK_FILE_INTERVAL) {
+            last_time_checked = current_time;
+            file_already_exists = file_exists(writing_filename);
         }
 
-        if (ImGui::BeginMenu("Debug")) {
-            ImGui::Checkbox("Debug Overlay", &m_show_debug_overlay);
-            ImGui::Checkbox("ImGui Demo", &m_show_imgui_demo);
-            ImGui::EndMenu();
+        if (file_already_exists) ImGui::Text("WARNING: A File with that name already exists");
+
+
+        IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+        IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+
+            filename.clear();
+            filename.append(writing_filename);
+
+            CLOG("Writing spritesheet to: " << filename);
+
+            auto cfilename = filename.c_str();
+
+            if (!SpriteManager::get().write_sprites_to_spritesheet(cfilename)) {
+                CLOG("An error has happened while writing the spritesheet");
+                ImGui::OpenPopup("Error Writing Spritesheet");
+            }
+            else {
+                CLOG("Spritesheet write completed succesfully to file: " << filename);
+                ImGui::CloseCurrentPopup();
+            }
+
+
+        }
+        END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+        if (ImGui::BeginPopupModal("Error Writing Spritesheet"))
+        {
+            ImGui::Text("The spritesheet file could not be parsed correctly:\nPath: \"%s\"", filename.c_str());
+
+            IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+            ImGui::EndPopup();
         }
 
-        m_main_menu_height = ImGui::GetWindowSize().y;
 
-        ImGui::EndMainMenuBar();
+        //write_sprites_to_spritesheet
+        END_MENU_POPUP_MODAL;
 
-        if (m_show_imgui_demo) ImGui::ShowDemoWindow();
-        if (m_show_timeline) draw_timeline();
-        if (m_show_collider_explorer) ColliderManager::get().draw_collider_gui();
-        if (m_show_style_editor) draw_style_editor();
-        if (m_show_debug_overlay) draw_corner_overlay_debug_info();
 
-        ImGui::PopFont();
+        // ====== END OF FILE MENU ======
+        ImGui::EndMenu();
     }
+
+    if (ImGui::BeginMenu("View")) {
+        ImGui::Checkbox("Timeline", &m_show_timeline);
+        ImGui::Checkbox("Collider Explorer", &m_show_collider_explorer);
+        ImGui::Separator();
+        ImGui::Checkbox("Style Editor", &m_show_style_editor);
+        {
+            if (ImGui::BeginMenu("Scaling")) {
+                if (ImGui::MenuItem("100%", NULL, m_scaling_factor == 1.00f)) m_scaling_factor = 1.0f;
+                if (ImGui::MenuItem("125%", NULL, m_scaling_factor == 1.25f)) m_scaling_factor = 1.25f;
+                if (ImGui::MenuItem("150%", NULL, m_scaling_factor == 1.50f)) m_scaling_factor = 1.50f;
+                if (ImGui::MenuItem("175%", NULL, m_scaling_factor == 1.75f)) m_scaling_factor = 1.75f;
+                if (ImGui::MenuItem("200%", NULL, m_scaling_factor == 2.00f)) m_scaling_factor = 2.00f;
+                if (ImGui::MenuItem("225%", NULL, m_scaling_factor == 2.25f)) m_scaling_factor = 2.25f;
+                if (ImGui::MenuItem("250%", NULL, m_scaling_factor == 2.50f)) m_scaling_factor = 2.50f;
+                if (ImGui::MenuItem("300%", NULL, m_scaling_factor == 3.00f)) m_scaling_factor = 3.00f;
+                ImGui::EndMenu();
+            }
+        }
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Debug")) {
+        ImGui::Checkbox("Debug Overlay", &m_show_debug_overlay);
+        ImGui::Checkbox("ImGui Demo", &m_show_imgui_demo);
+        ImGui::EndMenu();
+    }
+
+    m_main_menu_height = ImGui::GetWindowSize().y;
+
+    ImGui::EndMainMenuBar();
+
+    if (m_show_imgui_demo) ImGui::ShowDemoWindow();
+    if (m_show_timeline) draw_timeline();
+    if (m_show_collider_explorer) ColliderManager::get().draw_collider_gui();
+    if (m_show_style_editor) draw_style_editor();
+    if (m_show_debug_overlay) draw_corner_overlay_debug_info();
+
+
+    ImGui::PopFont();
 }
 
 void GUIManager::draw_corner_overlay_debug_info() {
     bool open = true;
     const float DISTANCE = 10.0f;
     static int corner = 0;
-    auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
+    auto extra_vertical_padding = ImGui::GetTextLineHeightWithSpacing();
+    auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : (DISTANCE + extra_vertical_padding));
     auto window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
     auto background = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
@@ -333,8 +362,7 @@ void GUIManager::draw_corner_overlay_debug_info() {
 
         ImGui::Text("Frames Per Second: (%.1f)", (1.f / TimeManager::get().get_delta_time().asSeconds()));
         ImGui::Text("Frame Time: (%d) ms", (TimeManager::get().get_delta_time().asMilliseconds()));
-        if (ImGui::BeginPopupContextWindow())
-        {
+        if (ImGui::BeginPopupContextWindow()) {
             if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
             if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
             if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
@@ -385,6 +413,7 @@ void GUIManager::draw_timeline() {
 
         auto window_height = ImGui::GetCursorPos().y;
         ImGui::SetWindowPos(ImVec2(0, screen_size.y - window_height), true);
+        m_timeline_height = window_height;
     }
     ImGui::End();
 

@@ -22,6 +22,7 @@ AttributeType create_attribute_type(
 ColliderInstance create_collider_instance(const ColliderType & collider_type, const std::string & name, Vec4f * color) {
     auto instance = ColliderInstance();
     instance.name = name;
+    instance.parent_name = collider_type.name;
     if (color) {
         instance.color = *color;
     }

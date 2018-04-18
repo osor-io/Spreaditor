@@ -64,6 +64,7 @@ struct AttributeType {
 
 struct ColliderInstance {
     std::string name;
+    std::string parent_name;
     std::set<AttributeInstance> attributes;
     std::unordered_map<SpriteIDType, std::vector<ColliderRect>> rects;
     Vec4f color;

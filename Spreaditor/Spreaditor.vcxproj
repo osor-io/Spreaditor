@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="dep\src\imconfig.cpp" />
     <ClCompile Include="src\colliders\ColliderManager.cpp" />
     <ClCompile Include="src\colliders\ColliderFactory.cpp" />
     <ClCompile Include="dep\src\detail\pugixml.cpp" />

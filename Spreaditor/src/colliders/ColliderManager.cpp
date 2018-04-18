@@ -21,14 +21,15 @@ void ColliderManager::draw_collider_gui() {
 
     auto padding_top = GUIManager::get().get_main_menu_height();
     auto screen_size = RenderManager::get().get_main_render_target()->getSize();
-    ImGui::SetNextWindowSize(ImVec2(0, /* @@TODO: Set here the height we want */0));
+
     if (ImGui::Begin("Collider Explorer", nullptr,
         ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoSavedSettings |
-        ImGuiWindowFlags_AlwaysAutoResize |
-        ImGuiWindowFlags_NoTitleBar
+        ImGuiWindowFlags_ResizeFromAnySide |
+        ImGuiWindowFlags_HorizontalScrollbar |
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_RestrictResizeToLeftSide
     )) {
 
         static const auto collider_type_tag = std::string("[Collider Type] ");
@@ -43,6 +44,8 @@ void ColliderManager::draw_collider_gui() {
 
         auto open_error = false;
         auto & colliders = m_colliders;
+
+        ColliderType* collider_type_to_remove = nullptr;
 
         // We show stuff for each collider type
         for (auto& c : colliders) {
@@ -77,7 +80,11 @@ void ColliderManager::draw_collider_gui() {
 
                 ImGui::Indent();
 
-                // We show the attribute types that this collider type has
+                ImGui::Indent();
+
+                // ATTRIBUTES
+
+                // We show the attributes
                 if (collider_type.attributes.size() == 0) {
                     ImGui::Text("[%s] has no attributes", collider_type.name.c_str());
                 }
@@ -149,7 +156,7 @@ void ColliderManager::draw_collider_gui() {
 
                                 static auto selected_type = attribute.type;
                                 ImGui::Text("Type: ");
-                                ImGui::SameLine(120);
+                                ImGui::SameLine();
                                 ImGui::Combo("##TypeCombo", &selected_type, "Integer\0Float\0Bool\0String\0\0");
 
                                 static auto default_value_int = 0;
@@ -159,7 +166,7 @@ void ColliderManager::draw_collider_gui() {
 
 
                                 ImGui::Text("Default Value: ");
-                                ImGui::SameLine(120);
+                                ImGui::SameLine();
                                 if (selected_type == ATTRIBUTE_TYPE_INT) {
                                     ImGui::InputInt("##DefaultValueInputInt", &default_value_int);
                                 }
@@ -246,7 +253,7 @@ void ColliderManager::draw_collider_gui() {
                                 }
                                 END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
                             });
-                            button_to_popup("Erase Attribute Type", [&]() {
+                            button_to_popup("Delete Attribute Type", [&]() {
 
                                 // Name for the collider type
                                 ImGui::Text("Are you sure you want to remove the attribute type %s?\n"
@@ -291,6 +298,7 @@ void ColliderManager::draw_collider_gui() {
 
                     if (attribute_to_erase) {
                         collider_type.attributes.erase(*attribute_to_erase);
+                        attribute_to_erase = nullptr;
                     }
 
                 }
@@ -302,12 +310,12 @@ void ColliderManager::draw_collider_gui() {
 
                     // Name for the collider type
                     ImGui::Text("Name: ");
-                    ImGui::SameLine(120);
+                    ImGui::SameLine();
                     ImGui::InputText("##ColliderTypeName", attribute_type_name, MAX_COLLIDER_STRING_SIZE);
 
                     static auto selected_type = int{ ATTRIBUTE_TYPE_INT };
                     ImGui::Text("Type: ");
-                    ImGui::SameLine(120);
+                    ImGui::SameLine();
                     ImGui::Combo("##TypeCombo", &selected_type, "Integer\0Float\0Bool\0String\0\0");
 
                     static auto default_value_int = 0;
@@ -316,7 +324,7 @@ void ColliderManager::draw_collider_gui() {
                     static auto default_value_bool = true;
 
                     ImGui::Text("Default Value: ");
-                    ImGui::SameLine(120);
+                    ImGui::SameLine();
                     if (selected_type == ATTRIBUTE_TYPE_INT) {
                         ImGui::InputInt("##DefaultValueInputInt", &default_value_int);
                     }
@@ -411,11 +419,16 @@ void ColliderManager::draw_collider_gui() {
 
                 ImGui::Separator();
 
+
+                // INSTANCES
+
                 // Collider Instances
                 if (instances.size() == 0) {
                     ImGui::Text("[%s] has no intances", collider_type.name.c_str());
                 }
                 else {
+
+                    ColliderInstance * instance_to_delete = nullptr;
 
                     for (auto& c_instance : instances) {
 
@@ -439,6 +452,7 @@ void ColliderManager::draw_collider_gui() {
 
                         if (ImGui::CollapsingHeader((collider_instance_tag + instance.name).c_str())) {
 
+                            ImGui::Indent();
 
                             for (auto& a : instance.attributes) {
 
@@ -456,12 +470,12 @@ void ColliderManager::draw_collider_gui() {
 
                                     if (attribute.type == ATTRIBUTE_TYPE_INT) {
                                         ImGui::Text("Type: Integer");
-                                        ImGui::Text("Value: "); ImGui::SameLine(120);
+                                        ImGui::Text("Value: "); ImGui::SameLine();
                                         ImGui::InputInt("##InputInt", (int*)&attribute.value);
                                     }
                                     else if (attribute.type == ATTRIBUTE_TYPE_STRING) {
                                         ImGui::Text("Type: String");
-                                        ImGui::Text("Value: "); ImGui::SameLine(120);
+                                        ImGui::Text("Value: "); ImGui::SameLine();
                                         auto& attribute_string = std::get<std::string>(attribute.value);
                                         if (attribute_string.capacity() < MAX_COLLIDER_STRING_SIZE) {
                                             attribute_string.reserve(MAX_COLLIDER_STRING_SIZE);
@@ -471,12 +485,12 @@ void ColliderManager::draw_collider_gui() {
                                     }
                                     else if (attribute.type == ATTRIBUTE_TYPE_FLOAT) {
                                         ImGui::Text("Type: Float");
-                                        ImGui::Text("Value: "); ImGui::SameLine(120);
+                                        ImGui::Text("Value: "); ImGui::SameLine();
                                         ImGui::InputFloat("##InputFloat", (float*)&attribute.value);
                                     }
                                     else if (attribute.type == ATTRIBUTE_TYPE_BOOL) {
                                         ImGui::Text("Type: Bool");
-                                        ImGui::Text("Value: "); ImGui::SameLine(120);
+                                        ImGui::Text("Value: "); ImGui::SameLine();
                                         ImGui::Checkbox("##InputBool", (bool*)&attribute.value);
                                     }
                                     else {
@@ -488,6 +502,28 @@ void ColliderManager::draw_collider_gui() {
                                 else {
                                 }
                             }
+
+                            button_to_popup("Delete Collider Instance", [&]() {
+
+                                // Name for the collider type
+                                ImGui::Text("Are you sure you want to delete the collider Instance %s?\n",
+                                    collider_type.name.c_str());
+
+                                IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+                                {
+                                    ImGui::CloseCurrentPopup();
+                                }
+                                END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+                                IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+                                    instance_to_delete = &instance;
+                                    ImGui::CloseCurrentPopup();
+                                }
+                                END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+                            });
+
+                            ImGui::Unindent();
                         }
 
                         ImGui::PopStyleColor();
@@ -496,6 +532,12 @@ void ColliderManager::draw_collider_gui() {
 
                         ImGui::PopID();
                     }
+
+                    if (instance_to_delete) {
+                        instances.erase(*instance_to_delete);
+                        instance_to_delete = nullptr;
+                    }
+
                 }
 
                 // Create a new collider instance
@@ -508,12 +550,12 @@ void ColliderManager::draw_collider_gui() {
 
                     // Name for the collider type
                     ImGui::Text("Name: ");
-                    ImGui::SameLine(120);
+                    ImGui::SameLine();
                     ImGui::InputText("##ColliderInstanceName", collider_instance_name, MAX_COLLIDER_STRING_SIZE);
 
 
                     ImGui::Text("Color: ");
-                    ImGui::SameLine(120);
+                    ImGui::SameLine();
                     ImGui::ColorEdit4("##ColliderInstanceColor", (float*)&color, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 
                     IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
@@ -557,6 +599,52 @@ void ColliderManager::draw_collider_gui() {
                 );
 
                 ImGui::Unindent();
+
+                button_to_popup("Delete Collider Type", [&]() {
+
+                    // Name for the collider type
+                    ImGui::Text("Are you sure you want to delete the collider type %s?\n"
+                        "This will also erase all the instantiated colliders from this collider type!", collider_type.name.c_str());
+
+                    IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+                    {
+                        ImGui::CloseCurrentPopup();
+                    }
+                    END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+                    IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+
+                        auto to_remove = std::vector<ColliderInstance*>{};
+
+                        for (auto& c_instance : instances) {
+
+                            /*
+                            @@NOTE
+
+                            Ugly but, again, not problematic here. We are not
+                            touching the variables used for sorting.
+                            */
+                            auto& instance = const_cast<ColliderInstance&>(c_instance);
+
+                            if (instance.parent_name.compare(collider_type.name) == 0) {
+                                to_remove.push_back(&instance);
+                            }
+                        }
+
+                        for (auto& i : to_remove) {
+                            instances.erase(*i);
+                        }
+
+                        collider_type_to_remove = &collider_type;
+
+                        ImGui::CloseCurrentPopup();
+                    }
+                    END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+                });
+
+                ImGui::Unindent();
+
                 ImGui::PopID();
 
             } // End of for all collider types
@@ -567,6 +655,12 @@ void ColliderManager::draw_collider_gui() {
 
         }
 
+        // We delete the collider if it was requested for us to do so.
+        if (collider_type_to_remove) {
+            colliders.erase(*collider_type_to_remove);
+            collider_type_to_remove == nullptr;
+        }
+
         button_to_popup("New Collider Type", [&]() {
 
             static char collider_type_name[MAX_COLLIDER_STRING_SIZE];
@@ -575,12 +669,12 @@ void ColliderManager::draw_collider_gui() {
 
             // Name for the collider type
             ImGui::Text("Name: ");
-            ImGui::SameLine(120);
+            ImGui::SameLine();
             ImGui::InputText("##ColliderTypeName", collider_type_name, MAX_COLLIDER_STRING_SIZE);
 
             // Default color for the collider, which will also be used in the explorer
             ImGui::Text("Default color: ");
-            ImGui::SameLine(120);
+            ImGui::SameLine();
             ImGui::ColorEdit4("##ColliderTypeColor", (float*)&color, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 
             IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
@@ -621,9 +715,38 @@ void ColliderManager::draw_collider_gui() {
         DEFINE_GENERAL_ERROR_POPUP;
 
         auto window_height = ImGui::GetCursorPos().y;
-        auto window_width = ImGui::GetWindowWidth();
+        if (window_height < ImGui::GetWindowHeight()) {
+            window_height = ImGui::GetWindowHeight();
+        }
+
+        auto window_width = ImGui::GetWindowContentRegionWidth();
+        if (window_width < ImGui::GetWindowWidth()) {
+            window_width = ImGui::GetWindowWidth();
+        }
+
+        //@@TODO: Check here that height is no larger than screen 
+        auto need_resize = false;
+        auto new_size = ImVec2(window_width, window_height);
+
+        if (!ImGui::IsMouseDragging()) {
+            auto max_width = (screen_size.x / 2.0f);
+            if (window_width > max_width) {
+                new_size.x = max_width;
+                need_resize = true;
+            }
+        }
+
+        auto max_height = screen_size.y - GUIManager::get().get_main_menu_height() - GUIManager::get().get_timeline_height();
+        if (window_height > (max_height)) {
+            new_size.y = max_height;
+            need_resize = true;
+        }
+
+        if (need_resize) ImGui::SetWindowSize(new_size);
+
+
+        window_width = ImGui::GetWindowWidth();
         ImGui::SetWindowPos(ImVec2(screen_size.x - window_width, padding_top), true);
     }
     ImGui::End();
-
 }

@@ -9,8 +9,18 @@ WindowManager::WindowManager() {}
 WindowManager::~WindowManager() {}
 
 void WindowManager::start_up() {
-    m_window = std::make_unique<sf::RenderWindow>(sf::VideoMode(1200, 800), config::project_name);
 
+    /*
+    @@TODO
+    
+    Create window with different sizes based on screen resolution.
+    Also, update scaling level based on this resolution too.
+    */
+    m_window = std::make_unique<sf::RenderWindow>(
+        sf::VideoMode(1200, 800),
+        config::project_name,
+        sf::Style::Default);
+    
     /*
     @@TODO @@NOTE
     I'm still not sure about how to optimally configure the game's framerate, for the

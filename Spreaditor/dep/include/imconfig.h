@@ -65,6 +65,15 @@ namespace ImGui
 }
 */
 
+
+namespace ImGui
+{
+    void SetSamelineScaling(float scaling_factor = 1.0f);
+    void SameLineS(float pos_x = 0.0f, float spacing_w = -1.0f);
+    void ResizeableBorder(int border_n);
+}
+
+
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Color.hpp>
 
@@ -91,6 +100,5 @@ namespace ImGui
             static_cast<sf::Uint8>(z * 255.f),                          \
             static_cast<sf::Uint8>(w * 255.f));                         \
     }
-
 
 #pragma warning(pop)
