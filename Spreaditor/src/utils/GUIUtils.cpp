@@ -14,7 +14,7 @@ void show_help_marker(const char* desc){
 }
 
 
-void button_to_popup(const char * name, std::function<void()> popup_content){
+void button_to_popup(const char * name, std::function<void()> popup_content, std::function<void()> on_button){
 
     auto button_str = std::string{ name };
     button_str += "##Button";
@@ -23,6 +23,7 @@ void button_to_popup(const char * name, std::function<void()> popup_content){
     popup_str += "##Popup";
 
     if (ImGui::Button(button_str.c_str())) {
+        on_button();
         ImGui::OpenPopup(popup_str.c_str());
     }
 

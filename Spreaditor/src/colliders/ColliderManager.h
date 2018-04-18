@@ -7,7 +7,6 @@
 #include <map>
 #include <utility>
 
-#define MAX_COLLIDER_NAME_SIZE 512
 #define ALPHA_LIMIT 0.6
 
 class ColliderManager : public Manager<ColliderManager> {

@@ -73,4 +73,4 @@ ImGui::OpenPopup("Error##GeneralErrorPopup");
 
 void show_help_marker(const char* desc);
 
-void button_to_popup(const char* name, std::function<void()> popup_content);
+void button_to_popup(const char* name, std::function<void()> popup_content, std::function<void()> on_button = [](){});

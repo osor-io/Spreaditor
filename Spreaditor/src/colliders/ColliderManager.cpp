@@ -31,6 +31,12 @@ void ColliderManager::draw_collider_gui() {
         ImGuiWindowFlags_NoTitleBar
     )) {
 
+        static const auto collider_type_tag = std::string("[Collider Type] ");
+        static const auto collider_instance_tag = std::string("[Collider Instance] ");
+        static const auto attribute_type_tag = std::string("[Attribute Type] ");
+        static const auto attribute_instance_tag = std::string("[Attribute Instance] ");
+
+
         ImGui::Text("Collider Explorer");
 
         INIT_GENERAL_ERROR_POPUP;
@@ -65,8 +71,13 @@ void ColliderManager::draw_collider_gui() {
             ImGui::PushStyleColor(ImGuiCol_HeaderHovered, col_hover);
 
             // Collapsing header for the collider type
-            if (ImGui::CollapsingHeader(collider_type.name.c_str())) {
+            if (ImGui::CollapsingHeader((collider_type_tag + collider_type.name).c_str())) {
 
+                ImGui::PushID(collider_type.name.c_str());
+
+                ImGui::Indent();
+
+                // We show the attribute types that this collider type has
                 if (collider_type.attributes.size() == 0) {
                     ImGui::Text("[%s] has no attributes", collider_type.name.c_str());
                 }
@@ -77,6 +88,8 @@ void ColliderManager::draw_collider_gui() {
                     // For each attribute of the collider
                     for (auto& a : collider_type.attributes) {
 
+                        ImGui::PushID(a.name.c_str());
+
                         /*
                         @@NOTE
 
@@ -85,7 +98,7 @@ void ColliderManager::draw_collider_gui() {
                         */
                         auto& attribute = const_cast<AttributeType&>(a);
 
-                        if (ImGui::TreeNode(attribute.name.c_str())) {
+                        if (ImGui::TreeNode((attribute_type_tag + attribute.name).c_str())) {
 
                             ImGui::Text("Name: %s", attribute.name.c_str());
 
@@ -140,7 +153,7 @@ void ColliderManager::draw_collider_gui() {
                                 ImGui::Combo("##TypeCombo", &selected_type, "Integer\0Float\0Bool\0String\0\0");
 
                                 static auto default_value_int = 0;
-                                static char default_value_str[MAX_COLLIDER_NAME_SIZE];
+                                static char default_value_str[MAX_COLLIDER_STRING_SIZE];
                                 static auto default_value_float = 0.f;
                                 static auto default_value_bool = true;
 
@@ -151,7 +164,7 @@ void ColliderManager::draw_collider_gui() {
                                     ImGui::InputInt("##DefaultValueInputInt", &default_value_int);
                                 }
                                 else if (selected_type == ATTRIBUTE_TYPE_STRING) {
-                                    ImGui::InputText("##DefaultValueInputString", default_value_str, MAX_COLLIDER_NAME_SIZE);
+                                    ImGui::InputText("##DefaultValueInputString", default_value_str, MAX_COLLIDER_STRING_SIZE);
                                 }
                                 else if (selected_type == ATTRIBUTE_TYPE_FLOAT) {
                                     ImGui::InputFloat("##DefaultValueInputFloat", &default_value_float);
@@ -203,7 +216,29 @@ void ColliderManager::draw_collider_gui() {
 
                                         auto temp = create_attribute_instance(attribute);
 
-                                        instance.attributes.erase(temp);
+                                        /*
+                                        If the attribute already existed
+                                        */
+                                        auto previous = instance.attributes.find(temp);
+                                        if (previous != instance.attributes.end()) {
+
+                                            /*
+                                            If the attribute had the same type, then we don't change its value.
+                                            */
+                                            if (temp.type == previous->type) {
+                                                temp.value = previous->value;
+                                            }
+
+                                            /*
+                                            We erase the previous attribute
+                                            */
+                                            instance.attributes.erase(temp);
+                                        }
+
+                                        /*
+                                        And finally we instert the new attribute with the new type if
+                                        it changed and the default value if it did.
+                                        */
                                         instance.attributes.insert(temp);
                                     }
 
@@ -249,6 +284,9 @@ void ColliderManager::draw_collider_gui() {
 
                             ImGui::TreePop();
                         }
+
+                        ImGui::PopID();
+
                     }// End of for attributes
 
                     if (attribute_to_erase) {
@@ -260,13 +298,12 @@ void ColliderManager::draw_collider_gui() {
                 // Button to create a new attribute type for the current collider type
                 button_to_popup("New Attribute Type", [&]() {
 
-                    static char attribute_type_name[MAX_COLLIDER_NAME_SIZE];
-
+                    static char attribute_type_name[MAX_COLLIDER_STRING_SIZE];
 
                     // Name for the collider type
                     ImGui::Text("Name: ");
                     ImGui::SameLine(120);
-                    ImGui::InputText("##ColliderTypeName", attribute_type_name, MAX_COLLIDER_NAME_SIZE);
+                    ImGui::InputText("##ColliderTypeName", attribute_type_name, MAX_COLLIDER_STRING_SIZE);
 
                     static auto selected_type = int{ ATTRIBUTE_TYPE_INT };
                     ImGui::Text("Type: ");
@@ -274,7 +311,7 @@ void ColliderManager::draw_collider_gui() {
                     ImGui::Combo("##TypeCombo", &selected_type, "Integer\0Float\0Bool\0String\0\0");
 
                     static auto default_value_int = 0;
-                    static char default_value_str[MAX_COLLIDER_NAME_SIZE];
+                    static char default_value_str[MAX_COLLIDER_STRING_SIZE];
                     static auto default_value_float = 0.f;
                     static auto default_value_bool = true;
 
@@ -284,7 +321,7 @@ void ColliderManager::draw_collider_gui() {
                         ImGui::InputInt("##DefaultValueInputInt", &default_value_int);
                     }
                     else if (selected_type == ATTRIBUTE_TYPE_STRING) {
-                        ImGui::InputText("##DefaultValueInputString", default_value_str, MAX_COLLIDER_NAME_SIZE);
+                        ImGui::InputText("##DefaultValueInputString", default_value_str, MAX_COLLIDER_STRING_SIZE);
                     }
                     else if (selected_type == ATTRIBUTE_TYPE_FLOAT) {
                         ImGui::InputFloat("##DefaultValueInputFloat", &default_value_float);
@@ -374,6 +411,7 @@ void ColliderManager::draw_collider_gui() {
 
                 ImGui::Separator();
 
+                // Collider Instances
                 if (instances.size() == 0) {
                     ImGui::Text("[%s] has no intances", collider_type.name.c_str());
                 }
@@ -381,11 +419,25 @@ void ColliderManager::draw_collider_gui() {
 
                     for (auto& c_instance : instances) {
 
+                        ImGui::PushID(c_instance.name.c_str());
+
                         auto & instance = const_cast<ColliderInstance&>(c_instance);
 
-                        //ImGui::Indent();
+                        auto col = ImVec4(
+                            instance.color.x,
+                            instance.color.y,
+                            instance.color.z,
+                            instance.color.w > ALPHA_LIMIT ? ALPHA_LIMIT : instance.color.w
+                        );
 
-                        if (ImGui::CollapsingHeader(instance.name.c_str())) {
+                        auto col_active = col;
+                        auto col_hover = col;
+
+                        ImGui::PushStyleColor(ImGuiCol_Header, col);
+                        ImGui::PushStyleColor(ImGuiCol_HeaderActive, col_active);
+                        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, col_hover);
+
+                        if (ImGui::CollapsingHeader((collider_instance_tag + instance.name).c_str())) {
 
 
                             for (auto& a : instance.attributes) {
@@ -398,9 +450,7 @@ void ColliderManager::draw_collider_gui() {
                                 */
                                 auto& attribute = const_cast<AttributeInstance&>(a);
 
-                                static bool first_time = true;
-
-                                if (ImGui::TreeNode((attribute.name + "##AttributeInstance").c_str())) {
+                                if (ImGui::TreeNode((attribute_instance_tag + attribute.name + "##AttributeInstance").c_str())) {
 
                                     ImGui::Text("Name: %s", attribute.name.c_str());
 
@@ -412,15 +462,11 @@ void ColliderManager::draw_collider_gui() {
                                     else if (attribute.type == ATTRIBUTE_TYPE_STRING) {
                                         ImGui::Text("Type: String");
                                         ImGui::Text("Value: "); ImGui::SameLine(120);
-                                        static char temp_str[MAX_COLLIDER_NAME_SIZE];
-                                        if (first_time) {
-                                            auto& aux_string = std::get<std::string>(attribute.value);
-                                            aux_string.copy(temp_str, aux_string.size());
-                                            temp_str[aux_string.size()] = '\0';
-                                            LOG("Just Once");
+                                        auto& attribute_string = std::get<std::string>(attribute.value);
+                                        if (attribute_string.capacity() < MAX_COLLIDER_STRING_SIZE) {
+                                            attribute_string.reserve(MAX_COLLIDER_STRING_SIZE);
                                         }
-                                        ImGui::InputText("##InputText", temp_str, MAX_COLLIDER_NAME_SIZE);
-                                        attribute.value = std::string(temp_str);
+                                        ImGui::InputText("##InputText", attribute_string.data(), MAX_COLLIDER_STRING_SIZE);
                                         ImGui::Text("Stored Value: %s", std::get<std::string>(attribute.value).c_str());
                                     }
                                     else if (attribute.type == ATTRIBUTE_TYPE_FLOAT) {
@@ -437,35 +483,36 @@ void ColliderManager::draw_collider_gui() {
                                         assert(false); // Invalid attribute type
                                     }
 
-                                    if (first_time) {
-                                        first_time = false;
-                                    }
-
                                     ImGui::TreePop();
                                 }
                                 else {
-                                    first_time = true;
                                 }
                             }
                         }
 
+                        ImGui::PopStyleColor();
+                        ImGui::PopStyleColor();
+                        ImGui::PopStyleColor();
+
+                        ImGui::PopID();
                     }
                 }
 
                 // Create a new collider instance
+                static auto color = Vec4f{ 0.0f, 1.0f, 0.0f, 0.7f };
                 button_to_popup("New Collider Instance", [&]() {
 
-                    static char collider_instance_name[MAX_COLLIDER_NAME_SIZE];
+                    static char collider_instance_name[MAX_COLLIDER_STRING_SIZE];
 
                     ImGui::Text("Creating instance of type: %s", collider_type.name.c_str());
 
                     // Name for the collider type
                     ImGui::Text("Name: ");
                     ImGui::SameLine(120);
-                    ImGui::InputText("##ColliderInstanceName", collider_instance_name, MAX_COLLIDER_NAME_SIZE);
+                    ImGui::InputText("##ColliderInstanceName", collider_instance_name, MAX_COLLIDER_STRING_SIZE);
 
-                    auto color = collider_type.default_color;
-                    ImGui::Text("Default color: ");
+
+                    ImGui::Text("Color: ");
                     ImGui::SameLine(120);
                     ImGui::ColorEdit4("##ColliderInstanceColor", (float*)&color, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 
@@ -486,7 +533,8 @@ void ColliderManager::draw_collider_gui() {
 
                             auto new_collider_instance = create_collider_instance(
                                 collider_type,
-                                std::string(collider_instance_name)
+                                std::string(collider_instance_name),
+                                &color
                             );
 
                             if (instances.find(new_collider_instance) != instances.end()) {
@@ -504,13 +552,14 @@ void ColliderManager::draw_collider_gui() {
 
                     }
                     END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
-                });
+                }
+                , [&]() { color = collider_type.default_color; }
+                );
 
+                ImGui::Unindent();
+                ImGui::PopID();
 
-                //@@TODO: Show stuff for each collider type
-
-
-            }
+            } // End of for all collider types
 
             ImGui::PopStyleColor();
             ImGui::PopStyleColor();
@@ -520,14 +569,14 @@ void ColliderManager::draw_collider_gui() {
 
         button_to_popup("New Collider Type", [&]() {
 
-            static char collider_type_name[MAX_COLLIDER_NAME_SIZE];
+            static char collider_type_name[MAX_COLLIDER_STRING_SIZE];
 
-            static auto color = Vec4f();
+            static auto color = Vec4f{ 0.0f, 1.0f, 0.0f, 0.7f };
 
             // Name for the collider type
             ImGui::Text("Name: ");
             ImGui::SameLine(120);
-            ImGui::InputText("##ColliderTypeName", collider_type_name, MAX_COLLIDER_NAME_SIZE);
+            ImGui::InputText("##ColliderTypeName", collider_type_name, MAX_COLLIDER_STRING_SIZE);
 
             // Default color for the collider, which will also be used in the explorer
             ImGui::Text("Default color: ");

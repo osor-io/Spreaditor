@@ -19,10 +19,15 @@ AttributeType create_attribute_type(
     return std::move(attribute_type);
 }
 
-ColliderInstance create_collider_instance(const ColliderType & collider_type, const std::string & name) {
+ColliderInstance create_collider_instance(const ColliderType & collider_type, const std::string & name, Vec4f * color) {
     auto instance = ColliderInstance();
     instance.name = name;
-    instance.color = collider_type.default_color;
+    if (color) {
+        instance.color = *color;
+    }
+    else {
+        instance.color = collider_type.default_color;
+    }
     for (const auto& attr : collider_type.attributes) {
         instance.attributes.insert(create_attribute_instance(attr));
     }

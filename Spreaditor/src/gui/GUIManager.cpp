@@ -312,14 +312,15 @@ void GUIManager::do_gui() {
 void GUIManager::draw_corner_overlay_debug_info() {
     bool open = true;
     const float DISTANCE = 10.0f;
-    static int corner = 1;
+    static int corner = 0;
     auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
     auto window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
+    auto background = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
+    background.w = 0.5f;
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, background); // Transparent background
     if (ImGui::Begin("Debug Overlay", &open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
     {
-        
         ImGui::Text("Mouse Position (Global): (%6.1f,%6.1f)", m_global_mouse_pos.x, m_global_mouse_pos.y);
 
         if (m_is_mouse_inside_sprite) {
