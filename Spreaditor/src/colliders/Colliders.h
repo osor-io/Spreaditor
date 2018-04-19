@@ -13,25 +13,25 @@
 using AttributeValueType = int;
 
 enum ATTRIBUTE_VALUE_TYPE_ {
-    ATTRIBUTE_TYPE_INT = 0,
+	ATTRIBUTE_TYPE_INT = 0,
     ATTRIBUTE_TYPE_FLOAT,
     ATTRIBUTE_TYPE_BOOL,
     ATTRIBUTE_TYPE_STRING,
     ATTRIBUTE_TYPES_COUNT,
 };
 
-struct Vec4f;
 struct ColliderType;
 struct AttributeType;
 struct ColliderInstance;
 struct AttributeInstance;
 struct ColliderRect;
+struct Vec4f;
 using SpriteIDType = int;
 using ColliderCoordinateType = float;
 
 
 struct Vec4f {
-    float x, y, z, w;
+	float x, y, z, w;
 };
 
 struct ColliderType {
@@ -64,7 +64,6 @@ struct AttributeType {
 
 struct ColliderInstance {
     std::string name;
-    std::string parent_name;
     std::set<AttributeInstance> attributes;
     std::unordered_map<SpriteIDType, std::vector<ColliderRect>> rects;
     Vec4f color;
@@ -98,7 +97,6 @@ struct ColliderRect {
     ColliderCoordinateType width;
     ColliderCoordinateType height;
 };
-
 
 
 /**
