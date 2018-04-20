@@ -1,7 +1,5 @@
 #include "ColliderSerialization.h"
 
-//@@TODO @@UNTESTED
-
 void to_json(json & j, const ColliderType & v) {
 	j = json{
 		{ "name", v.name }
@@ -81,9 +79,12 @@ void to_json(json & j, const ColliderInstance & v) {
 
 	j["attributes"] = v.attributes;
 
+	auto& j_rects = j["rects"];
+	j_rects = json(json::value_t::object);
+
 	for (const auto& elem : v.rects) {
 		auto const string_key = std::to_string(elem.first);
-		j["rects"][string_key] = elem.second;
+		j_rects[string_key] = elem.second;
 	}
 
 	j["color"] = v.color;

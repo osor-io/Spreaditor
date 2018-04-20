@@ -4,6 +4,8 @@
 #include "../render/RenderManager.h"
 #include "../gui/GUIManager.h"
 #include "../utils/GUIUtils.h"
+#include "ColliderSerialization.h" 
+#include "File.h"
 
 ColliderManager::ColliderManager() {}
 
@@ -15,6 +17,47 @@ void ColliderManager::start_up() {
 
 void ColliderManager::shut_down() {
 
+}
+
+bool ColliderManager::write_colliders_to_file(const char * filename) const {
+
+	auto j = json{};
+
+	auto& j_types = j["types"];
+	auto& j_instances = j["instances"];
+
+
+	auto i = 0;
+	for (const auto& c : m_colliders) {
+
+		const auto & type = c.first;
+
+		j_types[type.name] = type;
+
+		const auto & instances = c.second;
+
+		for (const auto& instance : instances) {
+
+			j_instances[type.name][instance.name] = instance;
+
+			for (const auto& attr : instance.attributes) {
+				if (attr.type == ATTRIBUTE_TYPE_STRING) {
+					LOG(attr.name << ": " << std::get<std::string>(attr.value));
+				}
+			}
+
+		}
+
+	}
+
+
+	LOG(std::setw(4) << j);
+
+	// @@TODO @@DOING : Also check what else there is TODO and DOING
+
+	write_to_file(filename, j.dump(4).c_str());
+
+	return true;
 }
 
 void ColliderManager::draw_collider_gui() {
@@ -49,7 +92,7 @@ void ColliderManager::draw_collider_gui() {
 
 		ColliderType* collider_type_to_remove = nullptr;
 
-		// We show stuff for each collider type
+		//// COLLIDER TYPES
 		for (auto& c : colliders) {
 
 			/*
@@ -84,7 +127,7 @@ void ColliderManager::draw_collider_gui() {
 
 				ImGui::Indent();
 
-				// ATTRIBUTES
+				//// ATTRIBUTE TYPES
 
 				// We show the attributes
 				if (collider_type.attributes.size() == 0) {
@@ -422,7 +465,7 @@ void ColliderManager::draw_collider_gui() {
 				ImGui::Separator();
 
 
-				// INSTANCES
+				//// INSTANCES
 
 				// Collider Instances
 				if (instances.size() == 0) {
@@ -456,6 +499,8 @@ void ColliderManager::draw_collider_gui() {
 
 							ImGui::Indent();
 
+							//// ATTRIBUTE INSTANCES
+
 							for (auto& a : instance.attributes) {
 
 								/*
@@ -478,12 +523,15 @@ void ColliderManager::draw_collider_gui() {
 									else if (attribute.type == ATTRIBUTE_TYPE_STRING) {
 										ImGui::Text("Type: String");
 										ImGui::Text("Value: "); ImGui::SameLine();
-										auto& attribute_string = std::get<std::string>(attribute.value);
-										if (attribute_string.capacity() < MAX_COLLIDER_STRING_SIZE) {
-											attribute_string.reserve(MAX_COLLIDER_STRING_SIZE);
-										}
-										ImGui::InputText("##InputText", attribute_string.data(), MAX_COLLIDER_STRING_SIZE);
-										ImGui::Text("Stored Value: %s", std::get<std::string>(attribute.value).c_str());
+										auto& stored_value = std::get<std::string>(attribute.value);
+										assert(stored_value.size() < MAX_COLLIDER_STRING_SIZE - 1);
+										static char writeable_string[MAX_COLLIDER_STRING_SIZE];
+										std::copy(stored_value.begin(), stored_value.end(), writeable_string);
+										writeable_string[stored_value.size()] = '\0';
+										ImGui::InputText("##InputText", writeable_string, MAX_COLLIDER_STRING_SIZE);
+										stored_value.clear();
+										stored_value.append(writeable_string);
+										ImGui::Text("Stored Value: %s", stored_value.c_str());
 									}
 									else if (attribute.type == ATTRIBUTE_TYPE_FLOAT) {
 										ImGui::Text("Type: Float");

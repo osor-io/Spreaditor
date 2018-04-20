@@ -10,22 +10,23 @@
 #define ALPHA_LIMIT 0.6
 
 class ColliderManager : public Manager<ColliderManager> {
-    friend class CRSP<ColliderManager>;
-    using InstanceContainer = std::set<ColliderInstance>;
-    using ColliderContainer = std::map<ColliderType, InstanceContainer>;
+	friend class CRSP<ColliderManager>;
+	using InstanceContainer = std::set<ColliderInstance>;
+	using ColliderContainer = std::map<ColliderType, InstanceContainer>;
 private:
-    ColliderManager();
-    ~ColliderManager();
+	ColliderManager();
+	~ColliderManager();
 public:
-    void start_up() override;
-    void shut_down() override;
+	void start_up() override;
+	void shut_down() override;
 
-    const ColliderContainer& get_colliders() const { return m_colliders; }
+	const ColliderContainer& get_colliders() const { return m_colliders; }
+	bool write_colliders_to_file(const char* filename) const;
 
-    void draw_collider_gui();
+	void draw_collider_gui();
 
 private:
-    ColliderContainer m_colliders;
+	ColliderContainer m_colliders;
 
 };
 
