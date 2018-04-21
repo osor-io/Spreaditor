@@ -74,8 +74,8 @@ bool SpriteManager::write_sprites_to_spritesheet(const char * spritesheet_filena
             
             auto texture_image = texture->copyToImage();
 
-            auto dest_x = row * cell_side_pixel_length + (cell_side_pixel_length - sprite.getTextureRect().width);
-            auto dest_y = col * cell_side_pixel_length + (cell_side_pixel_length - sprite.getTextureRect().height);
+            auto dest_x = row * cell_side_pixel_length + ((cell_side_pixel_length - sprite.getTextureRect().width)/2.f);
+            auto dest_y = col * cell_side_pixel_length + ((cell_side_pixel_length - sprite.getTextureRect().height)/2.f);
 
             spritesheet_image.copy(texture_image, dest_x, dest_y, sprite.getTextureRect(), true);
 
