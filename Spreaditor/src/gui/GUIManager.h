@@ -66,6 +66,7 @@ private:
 
     bool m_show_timeline{ true };
     bool m_show_collider_explorer{ true };
+	bool m_show_tools{ true };
     bool m_show_style_editor{ false };
 
     float m_main_menu_height{ 20.f };

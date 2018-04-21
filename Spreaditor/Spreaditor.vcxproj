@@ -192,6 +192,7 @@
     <ClCompile Include="src\utils\File.cpp" />
     <ClCompile Include="src\utils\GUIUtils.cpp" />
     <ClCompile Include="src\window\WindowManager.cpp" />
+    <ClCompile Include="src\tools\ToolsManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\colliders\ColliderManager.h" />
@@ -254,6 +255,7 @@
     <ClInclude Include="src\utils\GUIUtils.h" />
     <ClInclude Include="src\utils\Manager.h" />
     <ClInclude Include="src\window\WindowManager.h" />
+    <ClInclude Include="src\tools\ToolsManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dep\include\detail\template_helpers.inl" />

@@ -3041,7 +3041,11 @@ void ImGui::Render()
         // Draw software mouse cursor if requested
         if (g.IO.MouseDrawCursor)
         {
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+
+//@@CHANGED
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)) && !defined(_DEBUG)
+
+#pragma message("Setting windows cursor ourselves")
 
             static auto hCursorHand = LoadCursor(NULL, IDC_HAND);
             static auto hCursorArrow = LoadCursor(NULL, IDC_ARROW);
@@ -3055,7 +3059,7 @@ void ImGui::Render()
             switch (g.MouseCursor) {
 
             case ImGuiMouseCursor_None:
-                SetCursor(NULL);
+				SetCursor(nullptr);
                 break;
             case ImGuiMouseCursor_Arrow:
                 SetCursor(hCursorArrow);
@@ -3084,6 +3088,9 @@ void ImGui::Render()
             }
 
 #else
+
+#pragma message("Drawing ImGui's custom cursor")
+
 
             const ImGuiMouseCursorData& cursor_data = g.MouseCursorData[g.MouseCursor];
             const ImVec2 pos = g.IO.MousePos - cursor_data.HotOffset;
@@ -4760,9 +4767,16 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 
                     //@@CHANGED
                     {
+
+						assert(!((flags & ImGuiWindowFlags_RestrictResizeToLeftSide) && (flags & ImGuiWindowFlags_RestrictResizeToRightSide)));
+
                         if (flags & ImGuiWindowFlags_RestrictResizeToLeftSide) {
                             if (resize_grip_n == 0) continue;
                         }
+
+						if (flags & ImGuiWindowFlags_RestrictResizeToRightSide) {
+							if (resize_grip_n == 1) continue;
+						}
                     }
 
                     const ImGuiResizeGripDef& grip = resize_grip_def[resize_grip_n];
@@ -4797,9 +4811,15 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 
                     //@@CHANGED
                     {
+						assert(!((flags & ImGuiWindowFlags_RestrictResizeToLeftSide) && (flags & ImGuiWindowFlags_RestrictResizeToRightSide)));
+
                         if (flags & ImGuiWindowFlags_RestrictResizeToLeftSide) {
                             if (border_n != 3 && border_n != 2) continue;
                         }
+
+						if (flags & ImGuiWindowFlags_RestrictResizeToRightSide) {
+							if (border_n != 1 && border_n != 4) continue;
+						}
                     }
 
                     const float BORDER_SIZE = 5.0f;          // FIXME: Only works _inside_ window because of HoveredWindow check.

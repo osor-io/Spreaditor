@@ -11,6 +11,7 @@
 #include "../sprites/SpriteManager.h"
 #include "../sprites/Spritesheet.h"
 #include "../colliders/ColliderManager.h"
+#include "../tools/ToolsManager.h"
 
 
 GUIManager::GUIManager() {}
@@ -370,6 +371,7 @@ void GUIManager::do_gui() {
 
 	if (ImGui::BeginMenu("View")) {
 		ImGui::Checkbox("Timeline", &m_show_timeline);
+		ImGui::Checkbox("Tools", &m_show_tools);
 		ImGui::Checkbox("Collider Explorer", &m_show_collider_explorer);
 		ImGui::Separator();
 		ImGui::Checkbox("Style Editor", &m_show_style_editor);
@@ -402,6 +404,7 @@ void GUIManager::do_gui() {
 	if (m_show_imgui_demo) ImGui::ShowDemoWindow();
 	if (m_show_timeline) draw_timeline();
 	if (m_show_collider_explorer) ColliderManager::get().draw_collider_gui();
+	if (m_show_tools) ToolsManager::get().draw_tools_gui();
 	if (m_show_style_editor) draw_style_editor();
 	if (m_show_debug_overlay) draw_corner_overlay_debug_info();
 
@@ -413,8 +416,8 @@ void GUIManager::draw_corner_overlay_debug_info() {
 	bool open = true;
 	const float DISTANCE = 10.0f;
 	static int corner = 0;
-	auto extra_vertical_padding = ImGui::GetTextLineHeightWithSpacing();
-	auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : (DISTANCE + extra_vertical_padding));
+	auto extra_vertical_margin = ImGui::GetTextLineHeightWithSpacing();
+	auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE - ColliderManager::get().timeline_width() : DISTANCE + ToolsManager::get().tools_width(), (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE - m_timeline_height : (DISTANCE + extra_vertical_margin));
 	auto window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
 	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 	auto background = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];

@@ -738,6 +738,7 @@ void ColliderManager::draw_collider_gui() {
 			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
 		});
 
+
 		if (open_error)
 			OPEN_GENERAL_ERROR_POPUP;
 
@@ -753,7 +754,6 @@ void ColliderManager::draw_collider_gui() {
 			window_width = ImGui::GetWindowWidth();
 		}
 
-		//@@TODO: Check here that height is no larger than screen 
 		auto need_resize = false;
 		auto new_size = ImVec2(window_width, window_height);
 		auto max_width = (screen_size.x / 2.0f);
@@ -780,7 +780,16 @@ void ColliderManager::draw_collider_gui() {
 
 
 		window_width = ImGui::GetWindowWidth();
+		m_timeline_width = window_width;
 		ImGui::SetWindowPos(ImVec2(screen_size.x - window_width, padding_top), true);
 	}
 	ImGui::End();
+
+	/*
+	@@TODO
+	
+	We can use SplitterBehaviour here if we want to separate the editor part from the hierarchy.
+
+	@see SplitterBehaviour @ imgui_internal.h
+	*/
 }

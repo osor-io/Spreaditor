@@ -576,6 +576,7 @@ enum ImGuiWindowFlags_
 
     //@@CHANGED
     ImGuiWindowFlags_RestrictResizeToLeftSide = 1 << 18,
+	ImGuiWindowFlags_RestrictResizeToRightSide = 1 << 19,
 
     // [Internal]
     ImGuiWindowFlags_ChildWindow = 1 << 24,  // Don't use! For internal use by BeginChild()

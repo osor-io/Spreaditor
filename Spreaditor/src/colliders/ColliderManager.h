@@ -22,11 +22,13 @@ public:
 
 	const ColliderContainer& get_colliders() const { return m_colliders; }
 	bool write_colliders_to_file(const char* filename) const;
+	float timeline_width()const { return m_timeline_width; }
 
 	void draw_collider_gui();
 
 private:
 	ColliderContainer m_colliders;
+	float m_timeline_width{ 200.f };
 
 };
 
