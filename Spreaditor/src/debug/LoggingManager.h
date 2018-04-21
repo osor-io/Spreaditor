@@ -6,6 +6,7 @@
 #include <chrono>
 #include <ctime>
 #include <sstream>
+#include "../os/OSManager.h"
 
 #define LOGF(s) LoggingManager::get().log(s)
 
@@ -27,7 +28,9 @@ public:
         auto ss = std::stringstream();
         ss << "LOGGING RUN @ " << std::ctime(&now) << "\n\n";
 
-        write_to_file(config::log_filename, ss.str().c_str());
+		m_logging_file = OSManager::get().executable_path() + "/" + config::log_filename;
+
+        write_to_file(m_logging_file.c_str(), ss.str().c_str());
     }
 
     void shut_down() override {
@@ -37,7 +40,7 @@ public:
         auto ss = std::stringstream();
         ss << "\n\nEND OF LOG @ " << std::ctime(&now);
 
-        append_to_file(config::log_filename, ss.str().c_str());
+        append_to_file(m_logging_file.c_str(), ss.str().c_str());
     }
 
     template<typename T>
@@ -48,9 +51,9 @@ public:
         auto ss = std::stringstream();
         ss << " - " << std::ctime(&now) << msg << "\n\n";
 
-        append_to_file(config::log_filename, ss.str().c_str());
+        append_to_file(m_logging_file.c_str(), ss.str().c_str());
     }
 
 private:
-
+	std::string m_logging_file{};
 };

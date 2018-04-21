@@ -17,6 +17,10 @@ public:
 
     std::string user_open_file(const char* filters = nullptr); // Default value for filters was: "All\0*.*\0Text\0*.TXT\0"
     std::string user_save_file(const char* filters = nullptr); // Default value for filters was: "All\0*.*\0Text\0*.TXT\0"
+	std::string executable_path();
+
+private:
+	std::string m_executable_path{};
 
 };
 

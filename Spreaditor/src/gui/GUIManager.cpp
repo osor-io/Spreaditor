@@ -62,6 +62,30 @@ bool GUIManager::is_debug_open() const {
 	return m_debug_open;
 }
 
+const sf::Vector2f & GUIManager::sprite_to_global(sf::Vector2f sprite_pos) const {
+
+	const auto& main_sprite = SpriteManager::get().get_cached_drawn_main_sprite();
+	const auto& sprite_bounds = main_sprite.getGlobalBounds();
+
+	return sf::Vector2f(
+		((sprite_pos.x / main_sprite.getTextureRect().width) * sprite_bounds.width) + sprite_bounds.left,
+		((sprite_pos.y / main_sprite.getTextureRect().height) * sprite_bounds.height) + sprite_bounds.top
+	);
+
+}
+
+const sf::Vector2f & GUIManager::global_to_sprite(sf::Vector2f global_pos) const {
+
+	const auto& main_sprite = SpriteManager::get().get_cached_drawn_main_sprite();
+	const auto& sprite_bounds = main_sprite.getGlobalBounds();
+
+	return sf::Vector2f(
+		((global_pos.x - sprite_bounds.left) / sprite_bounds.width)* main_sprite.getTextureRect().width,
+		((global_pos.y - sprite_bounds.top) / sprite_bounds.height)* main_sprite.getTextureRect().height
+	);
+
+}
+
 void GUIManager::update() {
 
 	// Mouse Updates
@@ -76,10 +100,7 @@ void GUIManager::update() {
 		const auto& sprite_bounds = main_sprite.getGlobalBounds();
 		m_is_mouse_inside_sprite = sprite_bounds.contains(m_global_mouse_pos);
 
-		m_sprite_mouse_position = sf::Vector2f(
-			((m_global_mouse_pos.x - sprite_bounds.left) / sprite_bounds.width)* main_sprite.getTextureRect().width,
-			((m_global_mouse_pos.y - sprite_bounds.top) / sprite_bounds.height)* main_sprite.getTextureRect().height
-		);
+		m_sprite_mouse_position = global_to_sprite(mouse_pos);
 
 
 		if (ImGui::GetIO().MouseDrawCursor)
@@ -161,11 +182,6 @@ void GUIManager::do_gui() {
 					}
 					else {
 
-						/*
-						@@TODO
-
-						Check why these are getting logged into the file but yes into the console
-						*/
 						CLOG("\tSpritesheet rows: " << spritesheet->get_rows());
 						CLOG("\tSpritesheet columns: " << spritesheet->get_cols());
 						CLOG("\tSprite width: " << spritesheet->get_sprite_width());
@@ -464,8 +480,6 @@ void GUIManager::draw_timeline() {
 
 		ImGui::Text("Timeline");
 		// @@TODO: Draw here timeline information in the same line.
-
-		//ImGui::Separator();
 
 		ImGui::BeginChild("##TimelineScrollingRegion", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * TIMELINE_SIZE), false, ImGuiWindowFlags_HorizontalScrollbar);
 		{

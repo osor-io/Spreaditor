@@ -317,6 +317,9 @@
     <ClInclude Include="src\tools\ToolsManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\tools\Tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\debug\cafe.inl">

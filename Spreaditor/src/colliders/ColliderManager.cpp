@@ -40,20 +40,11 @@ bool ColliderManager::write_colliders_to_file(const char * filename) const {
 
 			j_instances[type.name][instance.name] = instance;
 
-			for (const auto& attr : instance.attributes) {
-				if (attr.type == ATTRIBUTE_TYPE_STRING) {
-					LOG(attr.name << ": " << std::get<std::string>(attr.value));
-				}
-			}
-
 		}
 
 	}
 
-
-	LOG(std::setw(4) << j);
-
-	// @@TODO @@DOING : Also check what else there is TODO and DOING
+	LOG("Exporting the following data:\n\n" << std::setw(4) << j);
 
 	write_to_file(filename, j.dump(4).c_str());
 
@@ -787,7 +778,7 @@ void ColliderManager::draw_collider_gui() {
 
 	/*
 	@@TODO
-	
+
 	We can use SplitterBehaviour here if we want to separate the editor part from the hierarchy.
 
 	@see SplitterBehaviour @ imgui_internal.h

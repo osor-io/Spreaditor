@@ -13,34 +13,37 @@
 #include "./sprites/SpriteManager.h"
 #include "./gui/GUIManager.h"
 #include "./colliders/ColliderManager.h"
+#include "./tools/ToolsManager.h"
 
 
 void start_up() {
+	WindowManager::get().start_up();
+	OSManager::get().start_up();
     LoggingManager::get().start_up();
     TextFileManager::get().start_up();
     TextureManager::get().start_up();
     TimeManager::get().start_up();
-    WindowManager::get().start_up();
-    OSManager::get().start_up();
     RenderManager::get().start_up();
     InputManager::get().start_up();
     SpriteManager::get().start_up();
     GUIManager::get().start_up();
+	ToolsManager::get().start_up();
     ColliderManager::get().start_up();
 }
 
 void shut_down() {
     ColliderManager::get().shut_down();
+	ToolsManager::get().shut_down();
     GUIManager::get().shut_down();
     SpriteManager::get().shut_down();
     InputManager::get().shut_down();
     RenderManager::get().shut_down();
-    OSManager::get().shut_down();
-    WindowManager::get().shut_down();
     TimeManager::get().shut_down();
     TextureManager::get().shut_down();
     TextFileManager::get().shut_down();
     LoggingManager::get().shut_down();
+	OSManager::get().shut_down();
+	WindowManager::get().shut_down();
 }
 
 
@@ -50,6 +53,7 @@ inline void tick() {
     {    
         WindowManager::get().manage_events();
         GUIManager::get().update();
+		ToolsManager::get().tick();
     }
     TimeManager::get().end_tick();
 

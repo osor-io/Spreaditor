@@ -23,7 +23,7 @@ void WindowManager::start_up() {
     
     /*
     @@TODO @@NOTE
-    I'm still not sure about how to optimally configure the game's framerate, for the
+    I'm still not sure about how to optimally configure the program's framerate, for the
     time being I will leave it with just VSync enabled since just limiting the framerate
     with the line shown below seems to cause some variable frame rates creating somewhat
     noticeable stutter. Maybe it is caused by something else?
