@@ -9125,7 +9125,8 @@ bool ImGui::InputScalarEx(const char* label, ImGuiDataType data_type, void* data
         value_changed = DataTypeApplyOpFromText(buf, GImGui->InputTextState.InitialText.begin(), data_type, data_ptr, scalar_format);
 
     // Step buttons
-    if (step_ptr)
+	//@@CHANGED
+    if (step_ptr && !(extra_flags & ImGuiInputTextFlags_NoEditButtons))
     {
         PopItemWidth();
         SameLine(0, style.ItemInnerSpacing.x);

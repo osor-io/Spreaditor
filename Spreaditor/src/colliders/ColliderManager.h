@@ -21,6 +21,7 @@ public:
 	void shut_down() override;
 
 	const ColliderContainer& get_colliders() const { return m_colliders; }
+	ColliderContainer& get_non_const_colliders() { return m_colliders; }
 	bool write_colliders_to_file(const char* filename) const;
 	float timeline_width()const { return m_timeline_width; }
 

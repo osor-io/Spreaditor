@@ -18,6 +18,7 @@ bool SpriteManager::load_spritesheet(const char * filename) {
     return m_valid_sprites;
 }
 
+
 void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 
     if (!m_valid_sprites || m_current_main_sprite_index >= m_sprites.size()) return;

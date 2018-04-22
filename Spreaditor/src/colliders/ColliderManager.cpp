@@ -66,6 +66,7 @@ void ColliderManager::draw_collider_gui() {
 		ImGuiWindowFlags_HorizontalScrollbar |
 		ImGuiWindowFlags_NoTitleBar |
 		ImGuiWindowFlags_RestrictResizeToLeftSide
+		/* | ImGuiWindowFlags_MenuBar */
 	)) {
 
 		static const auto collider_type_tag = std::string("[Collider Type] ");
@@ -73,8 +74,15 @@ void ColliderManager::draw_collider_gui() {
 		static const auto attribute_type_tag = std::string("[Attribute Type] ");
 		static const auto attribute_instance_tag = std::string("[Attribute Instance] ");
 
-
-		ImGui::Text("Collider Explorer");
+		/*
+		ImGui::BeginMenuBar();
+		{
+		*/
+			ImGui::Text("Collider Explorer");
+		/*	
+		}
+		ImGui::EndMenuBar();
+		*/
 
 		INIT_GENERAL_ERROR_POPUP;
 

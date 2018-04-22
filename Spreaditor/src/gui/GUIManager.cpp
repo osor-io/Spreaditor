@@ -419,10 +419,10 @@ void GUIManager::do_gui() {
 
 	if (m_show_imgui_demo) ImGui::ShowDemoWindow();
 	if (m_show_timeline) draw_timeline();
-	if (m_show_collider_explorer) ColliderManager::get().draw_collider_gui();
 	if (m_show_tools) ToolsManager::get().draw_tools_gui();
 	if (m_show_style_editor) draw_style_editor();
 	if (m_show_debug_overlay) draw_corner_overlay_debug_info();
+	if (m_show_collider_explorer) ColliderManager::get().draw_collider_gui();
 
 
 	ImGui::PopFont();
@@ -432,7 +432,7 @@ void GUIManager::draw_corner_overlay_debug_info() {
 	bool open = true;
 	const float DISTANCE = 10.0f;
 	static int corner = 0;
-	auto extra_vertical_margin = ImGui::GetTextLineHeightWithSpacing();
+	auto extra_vertical_margin = get_main_menu_height() + ToolsManager::get().tools_options_bar_height();
 	auto window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE - ColliderManager::get().timeline_width() : DISTANCE + ToolsManager::get().tools_width(), (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE - m_timeline_height : (DISTANCE + extra_vertical_margin));
 	auto window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
 	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
@@ -468,18 +468,68 @@ void GUIManager::draw_corner_overlay_debug_info() {
 void GUIManager::draw_timeline() {
 	auto screen_size = RenderManager::get().get_main_render_target()->getSize();
 	ImGui::SetNextWindowSize(ImVec2(screen_size.x, 0));
+	
 	if (ImGui::Begin("Timeline", nullptr,
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse |
 		ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_AlwaysAutoResize |
-		ImGuiWindowFlags_NoTitleBar
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_MenuBar
 	)) {
 
 
-		ImGui::Text("Timeline");
-		// @@TODO: Draw here timeline information in the same line.
+		ImGui::BeginMenuBar();
+		{
+			auto main_sprite_index_cached = SpriteManager::get().get_current_main_sprite_index();
+
+			auto sprite_count = SpriteManager::get().get_sprites().size();
+			sprite_count = sprite_count > 0 ? sprite_count : 0;
+
+			auto show_sprite_options = sprite_count > 0;
+
+			ImGui::Text("Timeline");
+
+			if (show_sprite_options) {
+				ImGui::Text("\t");
+				ImGui::SliderInt("##Selected Sprite", &main_sprite_index_cached, 0, sprite_count - 1, "Sprite [%.0f]");
+
+				auto button_size = ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+
+				if (ImGui::Button("<##GoBackOneSprite", button_size)) {
+					if (main_sprite_index_cached > 0) {
+						--main_sprite_index_cached;
+					}
+				}
+
+				/*
+				Use this in case we want to allow the user to directly write the sprite he wants to go to
+				The formatting of the input is a bit weird (too wide) right now, so that would need to be fixed first
+				*/
+				//ImGui::InputInt("##InputTextSpriteIndex", &main_sprite_index_cached, 1, 20, ImGuiInputTextFlags_NoEditButtons);
+
+				if (ImGui::Button(">##GoForwardOneSprite", button_size)) {
+					if (main_sprite_index_cached < sprite_count - 1) {
+						++main_sprite_index_cached;
+					}
+				}
+
+				// Clamp the value to [0-max sprite index]
+				main_sprite_index_cached = main_sprite_index_cached > sprite_count - 1 ? sprite_count - 1 : main_sprite_index_cached;
+				main_sprite_index_cached = main_sprite_index_cached < 0 ? 0 : main_sprite_index_cached;
+
+				SpriteManager::get().set_current_main_sprite_index(main_sprite_index_cached);
+			}
+			else {
+				ImGui::Text("\tNo sprites available");
+			}
+
+
+
+		}
+		ImGui::EndMenuBar();
+
 
 		ImGui::BeginChild("##TimelineScrollingRegion", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * TIMELINE_SIZE), false, ImGuiWindowFlags_HorizontalScrollbar);
 		{
