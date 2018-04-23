@@ -111,7 +111,7 @@ void GUIManager::update() {
 	{
 		ImGui::GetIO().FontGlobalScale = m_scaling_factor;
 		ImGui::SetSamelineScaling(m_scaling_factor);
-		// @@TODO: Scale also the places where I set pixels exactly like in the samelines
+		// @@TODO: Scale also the places where I set pixels exactly like in the samelines and BUTTONS!! (look for ImVec2(120,something))
 	}
 
 
@@ -228,6 +228,7 @@ void GUIManager::do_gui() {
 		{
 			static auto filenames = std::vector<std::string>();
 
+			// Give the user the option to select a group of filenames with the sprites
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
 				filenames = OSManager::get().user_open_files(\
 					"(*.png) Portable Network Graphics\0*.png\0"
@@ -237,18 +238,19 @@ void GUIManager::do_gui() {
 				);
 			}
 
-#if 0
-			//@@TODO: Show here the sprite names selected
-			if (ImGui::BeginChild("##SpritesSelectedFilenames", ImVec2(0, 0), true)) {
+			// We show the filenames selected if we have some
+			if (filenames.size() > 0) {
+				if (ImGui::BeginChild("Selected files##SpritesSelectedFilenames", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 5), true,
+					ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
 
-				for (const auto& filename : filenames) {
-					ImGui::SameLine();
-					ImGui::Text("%s ", filename.c_str());
+					auto index = 0;
+					for (const auto& filename : filenames) {
+						ImGui::Text("%d: %s ", index++, filename.c_str());
+					}
+
 				}
-
+				ImGui::EndChild();
 			}
-			ImGui::EndChild();
-#endif
 
 			ImGui::Text("This will close the current project without keeping unsaved changes.");
 

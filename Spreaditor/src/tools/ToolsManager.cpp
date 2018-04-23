@@ -4,6 +4,16 @@
 #include "../colliders/ColliderManager.h"
 #include "../sprites/SpriteManager.h"
 
+#define INDEX_THRESHOLD_TO_ADD 256
+
+static const auto hidden_flags = ImGuiWindowFlags_NoTitleBar |
+ImGuiWindowFlags_NoResize |
+ImGuiWindowFlags_NoScrollbar |
+ImGuiWindowFlags_NoInputs |
+ImGuiWindowFlags_NoSavedSettings |
+ImGuiWindowFlags_NoFocusOnAppearing |
+ImGuiWindowFlags_NoBringToFrontOnFocus;
+
 ToolsManager::ToolsManager() {
 }
 
@@ -54,8 +64,6 @@ void ToolsManager::tick() {
 		else if (m_dragging) { // We just finished collider creation
 
 			m_currently_creating_collider = false;
-
-			//@@TODO Save collider rect into the appropriate instance
 
 			if (m_p_selected_type && m_p_selected_instance) {
 
@@ -218,12 +226,6 @@ void ToolsManager::draw_tools_gui() {
 			if (m_p_selected_type)
 				m_selected_type_copy = *m_p_selected_type;
 
-			/*
-			@@TODO: Check why this can be invalid.
-
-			It is invalid when we deleted all the attribute instances and that
-			one was selected.
-			*/
 			if (m_p_selected_instance)
 				m_selected_instance_copy = *m_p_selected_instance;
 
@@ -233,8 +235,6 @@ void ToolsManager::draw_tools_gui() {
 
 
 #pragma region modifying_tools_window
-
-			// @@TODO: Maybe set here color of a menu bar
 
 			auto window_size = ImGui::GetWindowSize();
 
@@ -336,19 +336,14 @@ void ToolsManager::draw_tools_gui() {
 	//// DRAWING APPROPRIATE RECTS ON TOP OF SPRITE
 
 	if (ImGui::Begin("##HiddenFullscreen", nullptr,
-		ImGuiWindowFlags_NoTitleBar |
-		ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoScrollbar |
-		ImGuiWindowFlags_NoInputs |
-		ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing |
-		ImGuiWindowFlags_NoBringToFrontOnFocus))
+		hidden_flags))
 	{
 
-		// @@TODO: Check that we don't exceed the vertex limit of the draw_list for ImGui
+		ImGui::BeginChild("##AvoidingLimit", ImVec2(0, 0), false, hidden_flags);
 
 		// We draw the colliders in any position of the window
 		auto draw_list = ImGui::GetWindowDrawList();
+
 		draw_list->PushClipRectFullScreen();
 
 		auto current_sprite_index = SpriteManager::get().get_current_main_sprite_index();
@@ -357,9 +352,7 @@ void ToolsManager::draw_tools_gui() {
 			for (const auto & pair : colliders) {
 				const auto & instances = pair.second;
 				for (const auto & instance : instances) {
-
-					draw_rects_of_instance(instance, current_sprite_index, draw_list);
-
+					draw_rects_of_instance(instance, current_sprite_index, &draw_list);
 				}
 			}
 
@@ -367,8 +360,8 @@ void ToolsManager::draw_tools_gui() {
 		else {
 
 			if (m_p_selected_instance) {
-
-				draw_rects_of_instance(*m_p_selected_instance, current_sprite_index, draw_list);
+				
+				draw_rects_of_instance(*m_p_selected_instance, current_sprite_index, &draw_list);
 
 			}
 
@@ -377,12 +370,13 @@ void ToolsManager::draw_tools_gui() {
 
 		draw_list->PopClipRect();
 
+
+		ImGui::EndChild();
 	}
 	ImGui::End();
-
 }
 
-void ToolsManager::draw_rects_of_instance(const ColliderInstance & instance, int current_sprite_index, ImDrawList * draw_list) {
+void ToolsManager::draw_rects_of_instance(const ColliderInstance & instance, int current_sprite_index, ImDrawList ** draw_list) {
 
 	auto border_color = ImColor(
 		instance.color.x,
@@ -395,13 +389,30 @@ void ToolsManager::draw_rects_of_instance(const ColliderInstance & instance, int
 	if (instance.rects.find(current_sprite_index) != instance.rects.end()) {
 		for (const auto& rect : instance.rects.at(current_sprite_index)) {
 
+			/*
+			If we are drawing too many vertices we end the child and start another to push the
+			current vertices to the screen
+			*/
+			if (sizeof(ImDrawIdx) == 2) {
+				if (((*draw_list)->VtxBuffer.Size + INDEX_THRESHOLD_TO_ADD) > (1 << 16)) {
+					ImGui::EndChild();
+					ImGui::BeginChild("##AvoidingLimit", ImVec2(0, 0), false, hidden_flags);
+					*draw_list = ImGui::GetWindowDrawList();
+					(*draw_list)->PushClipRectFullScreen();
+				}
+			}
+			else {
+				assert(false); // We are not checking for larger draw indices sizes.
+			}
+
+
 			auto drawing_collider_rect_origin = GUIManager::get().sprite_to_global(sf::Vector2f(rect.x, rect.y));
 			auto drawing_collider_rect_size = GUIManager::get().sprite_to_global(sf::Vector2f(rect.width, rect.height));
 
-			draw_list->AddRectFilled(drawing_collider_rect_origin, drawing_collider_rect_size,
+			(*draw_list)->AddRectFilled(drawing_collider_rect_origin, drawing_collider_rect_size,
 				ImGui::GetColorU32((ImVec4)fill_color));
 
-			draw_list->AddRect(drawing_collider_rect_origin, drawing_collider_rect_size,
+			(*draw_list)->AddRect(drawing_collider_rect_origin, drawing_collider_rect_size,
 				ImGui::GetColorU32((ImVec4)border_color));
 		}
 	}

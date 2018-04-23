@@ -37,6 +37,8 @@ public:
 
     bool write_sprites_to_spritesheet(const char* spritesheet_filename) const;
 
+	void set_default_zoom();
+
 private:
     std::unique_ptr<Spritesheet> m_spritesheet{};
     std::vector<sf::Sprite> m_sprites{};

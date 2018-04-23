@@ -24,7 +24,13 @@ public:
 
 private:
 
-	void draw_rects_of_instance(const ColliderInstance & instance, int current_sprite_index, ImDrawList * draw_list);
+	/**
+	Uses EndChild and BeginChild inside to keep us from drawing too many vertices.
+	
+	For this reason it need to be called after a BeginChild and before an EndChild
+	for them to be correctly paired.
+	*/
+	void draw_rects_of_instance(const ColliderInstance & instance, int current_sprite_index, ImDrawList ** draw_list);
 
 
 	Tool m_current_tool = Tool::NONE;

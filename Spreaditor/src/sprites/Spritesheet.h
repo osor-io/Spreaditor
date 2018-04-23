@@ -7,14 +7,6 @@
 #include <SFML/Graphics/Rect.hpp>
 
 
-/*
-@@TODO
-
-- Add constructor to create a spritesheet based on a vector of sprites
-- Transform m_texture to std::vector<sf::Texture*> to store all the required textures
-	- Remember to release them on Spritesheet destruction
-*/
-
 class Spritesheet {
 	using Sprite = sf::Sprite;
 	using IntRect = sf::IntRect;

@@ -785,7 +785,7 @@ void ColliderManager::draw_collider_gui() {
 	ImGui::End();
 
 	/*
-	@@TODO
+	@@TODO @@MAYBE
 
 	We can use SplitterBehaviour here if we want to separate the editor part from the hierarchy.
 

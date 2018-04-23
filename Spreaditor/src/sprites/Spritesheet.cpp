@@ -37,13 +37,13 @@ Spritesheet::Spritesheet(const std::vector<std::string>& texture_filenames) {
 	}
 
 	// We write the sprites to a temporary file with the spritesheet
-	write_to_file(TEMP_SPRITESHEET_IMAGE_FILENAME, sprites);
+	
+	auto temporary_spritesheet_filename = OSManager::get().executable_path() + TEMP_SPRITESHEET_IMAGE_FILENAME;
+	write_to_file(temporary_spritesheet_filename.c_str(), sprites);
 
 	// We initialize the variables while also reading the texture
-
 	m_sprite_type = SpritesheetMorphology::SQUARE;
-	auto texture_filename = std::string(TEMP_SPRITESHEET_IMAGE_FILENAME);
-	m_texture = TexturePacked(TextureManager::get().get_required_resource(texture_filename), texture_filename);
+	m_texture = TexturePacked(TextureManager::get().get_required_resource(temporary_spritesheet_filename), temporary_spritesheet_filename);
 	m_sprite_height = sprite_height;
 	m_sprite_width = sprite_width;
 	m_rows = m_texture.texture->getSize().y / sprite_height;
