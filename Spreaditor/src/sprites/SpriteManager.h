@@ -7,6 +7,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include "Spritesheet.h"
+#include <vector>
+#include <string>
 
 class SpriteManager : public Manager<SpriteManager> {
     friend class CRSP<SpriteManager>;
@@ -21,6 +23,7 @@ public:
 
 
     bool load_spritesheet(const char* filename);
+	bool load_sprites(const std::vector<std::string>& filenames);
 
     Spritesheet* get_spritesheet() const { return m_spritesheet.get(); }
     float get_main_sprite_zoom() const { return m_main_sprite_zoom; }

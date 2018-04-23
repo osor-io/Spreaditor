@@ -115,6 +115,7 @@ void ToolsManager::draw_tools_gui() {
 			}
 			else {
 				m_p_selected_type = nullptr;
+				m_p_selected_instance = nullptr;
 			}
 		}
 	}
@@ -217,6 +218,12 @@ void ToolsManager::draw_tools_gui() {
 			if (m_p_selected_type)
 				m_selected_type_copy = *m_p_selected_type;
 
+			/*
+			@@TODO: Check why this can be invalid.
+
+			It is invalid when we deleted all the attribute instances and that
+			one was selected.
+			*/
 			if (m_p_selected_instance)
 				m_selected_instance_copy = *m_p_selected_instance;
 

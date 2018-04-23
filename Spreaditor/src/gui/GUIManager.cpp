@@ -224,6 +224,112 @@ void GUIManager::do_gui() {
 		}
 		END_MENU_POPUP_MODAL;
 
+		BEGIN_MENU_POPUP_MODAL("New Project From Group of Sprites");
+		{
+			static auto filenames = std::vector<std::string>();
+
+			if (ImGui::Button("Explore", ImVec2(120, 0))) {
+				filenames = OSManager::get().user_open_files(\
+					"(*.png) Portable Network Graphics\0*.png\0"
+					"(*.bmp) Windows bitmap\0*.bmp\0"
+					"(*.jpg) Joint Photographic Experts Group\0*.jpg\0"
+
+				);
+			}
+
+#if 0
+			//@@TODO: Show here the sprite names selected
+			if (ImGui::BeginChild("##SpritesSelectedFilenames", ImVec2(0, 0), true)) {
+
+				for (const auto& filename : filenames) {
+					ImGui::SameLine();
+					ImGui::Text("%s ", filename.c_str());
+				}
+
+			}
+			ImGui::EndChild();
+#endif
+
+			ImGui::Text("This will close the current project without keeping unsaved changes.");
+
+			IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+			IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+
+				CLOG("Loading spritesheet from files");
+
+				auto found_unexisting_file = false;
+
+				for (const auto& filename : filenames) {
+					if (!file_exists(filename.c_str())) {
+						CLOG_ERROR("This file doesn't exist: %s" << filename.c_str());
+						found_unexisting_file = true;
+						break;
+					}
+				}
+
+				if (found_unexisting_file) {
+					CLOG_ERROR("Incorrect File Path for one of the files");
+					ImGui::OpenPopup("Incorrect File Path");
+				}
+				else {
+
+					auto loaded = SpriteManager::get().load_sprites(filenames);
+
+					auto spritesheet = SpriteManager::get().get_spritesheet();
+
+					if (!loaded || !spritesheet) {
+						CLOG_ERROR("Incorrect Spritesheet");
+						ImGui::OpenPopup("Incorrect Sprites");
+					}
+					else {
+
+						CLOG("\tSpritesheet rows: " << spritesheet->get_rows());
+						CLOG("\tSpritesheet columns: " << spritesheet->get_cols());
+						CLOG("\tSprite width: " << spritesheet->get_sprite_width());
+						CLOG("\tSprite height: " << spritesheet->get_sprite_height());
+						CLOG("\tAmount of sprites read: " << spritesheet->get_sprites().size());
+
+						CLOG("Correctly loaded spritesheet from the selected files");
+						ImGui::CloseCurrentPopup();
+					}
+				}
+			}
+			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+			if (ImGui::BeginPopupModal("Incorrect File Path"))
+			{
+				ImGui::Text("Some sprite file you are trying to open doesn't exist");
+
+				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopupModal("Incorrect Sprites"))
+			{
+				ImGui::Text("The sprites could not be parsed correctly");
+
+				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+				ImGui::EndPopup();
+			}
+
+		}
+		END_MENU_POPUP_MODAL;
+
 		ImGui::Separator();
 
 
@@ -468,7 +574,7 @@ void GUIManager::draw_corner_overlay_debug_info() {
 void GUIManager::draw_timeline() {
 	auto screen_size = RenderManager::get().get_main_render_target()->getSize();
 	ImGui::SetNextWindowSize(ImVec2(screen_size.x, 0));
-	
+
 	if (ImGui::Begin("Timeline", nullptr,
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoResize |
