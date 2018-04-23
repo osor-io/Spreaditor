@@ -177,6 +177,7 @@
     <ClCompile Include="dep\src\Tileset.cpp" />
     <ClCompile Include="src\colliders\Colliders.cpp" />
     <ClCompile Include="src\colliders\ColliderSerialization.cpp" />
+    <ClCompile Include="src\project\ProjectUtils.cpp" />
     <ClCompile Include="src\sprites\SpriteManager.cpp" />
     <ClCompile Include="src\os\OSManager.cpp" />
     <ClCompile Include="src\gui\GUIManager.cpp" />
@@ -233,6 +234,7 @@
     <ClInclude Include="dep\src\miniz.h" />
     <ClInclude Include="src\colliders\Colliders.h" />
     <ClInclude Include="src\colliders\ColliderSerialization.h" />
+    <ClInclude Include="src\project\ProjectUtils.h" />
     <ClInclude Include="src\sprites\SpriteManager.h" />
     <ClInclude Include="src\os\OSManager.h" />
     <ClInclude Include="src\gui\GUIManager.h" />

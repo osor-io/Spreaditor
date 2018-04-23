@@ -42,8 +42,8 @@ public:
     const sf::Vector2f& get_sprite_mouse_pos() const { return m_sprite_mouse_position; }
     bool is_mouse_inside_sprite() const { return m_is_mouse_inside_sprite; }
 	float scaling() const { return m_scaling_factor; }
-	const sf::Vector2f& sprite_to_global(sf::Vector2f) const;
-	const sf::Vector2f& global_to_sprite(sf::Vector2f) const;
+	sf::Vector2f sprite_to_global(sf::Vector2f) const;
+	sf::Vector2f global_to_sprite(sf::Vector2f) const;
 
 
     void update();

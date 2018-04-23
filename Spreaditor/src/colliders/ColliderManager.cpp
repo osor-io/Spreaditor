@@ -20,12 +20,20 @@ void ColliderManager::shut_down() {
 }
 
 bool ColliderManager::write_colliders_to_file(const char * filename) const {
+	auto j = colliders_to_json();
 
+	LOG("Exporting the following data:\n\n" << std::setw(4) << j);
+
+	write_to_file(filename, j.dump(4).c_str());
+
+	return true;
+}
+
+ColliderManager::json ColliderManager::colliders_to_json() const {
 	auto j = json{};
 
 	auto& j_types = j["types"];
 	auto& j_instances = j["instances"];
-
 
 	auto i = 0;
 	for (const auto& c : m_colliders) {
@@ -37,16 +45,43 @@ bool ColliderManager::write_colliders_to_file(const char * filename) const {
 		const auto & instances = c.second;
 
 		for (const auto& instance : instances) {
-
 			j_instances[type.name][instance.name] = instance;
-
 		}
-
 	}
 
-	LOG("Exporting the following data:\n\n" << std::setw(4) << j);
+	return j;
+}
 
-	write_to_file(filename, j.dump(4).c_str());
+bool ColliderManager::colliders_from_json(const json & j) {
+
+	ColliderContainer new_colliders{};
+
+	if (j.find("types") == j.end() || j["types"].is_null() || j.find("instances") == j.end() || j["instances"].is_null()) {
+		CLOG_ERROR("We couldn't find types or instances in the file provided");
+		return false;
+	}
+
+	json types = j["types"];
+	json instances = j["instances"];
+
+	for (auto& jtype : types) {
+		ColliderType type = jtype;
+		new_colliders[type] = {};
+	}
+
+	for (json::iterator it_type = instances.begin(); it_type != instances.end(); ++it_type) {
+
+		auto type_name = it_type.key();
+		auto aux_type = create_collider_type(type_name, Vec4f());
+
+		json j_instance = it_type.value();
+
+		for (json::iterator it_instance = j_instance.begin(); it_instance != j_instance.end(); ++it_instance) {
+			auto instance_name = it_instance.key();
+			ColliderInstance instance = it_instance.value();
+			new_colliders[aux_type].insert(instance);
+		}
+	}
 
 	return true;
 }
@@ -78,8 +113,8 @@ void ColliderManager::draw_collider_gui() {
 		ImGui::BeginMenuBar();
 		{
 		*/
-			ImGui::Text("Collider Explorer");
-		/*	
+		ImGui::Text("Collider Explorer");
+		/*
 		}
 		ImGui::EndMenuBar();
 		*/
@@ -499,7 +534,6 @@ void ColliderManager::draw_collider_gui() {
 							ImGui::Indent();
 
 							//// ATTRIBUTE INSTANCES
-
 							for (auto& a : instance.attributes) {
 
 								/*
@@ -549,6 +583,21 @@ void ColliderManager::draw_collider_gui() {
 									ImGui::TreePop();
 								}
 								else {
+								}
+							}
+
+							//// RECTS
+							for (const auto& rect_group : instance.rects) {
+
+								auto sprite_id = rect_group.first;
+
+								for (const auto& rect : rect_group.second) {
+									ImGui::Text("Rect (x = %f, y = %f, width = %f, height = %f) [sprite %d]",
+										rect.x,
+										rect.y,
+										rect.width,
+										rect.height,
+										sprite_id);
 								}
 							}
 

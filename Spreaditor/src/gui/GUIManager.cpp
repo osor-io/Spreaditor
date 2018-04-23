@@ -12,6 +12,7 @@
 #include "../sprites/Spritesheet.h"
 #include "../colliders/ColliderManager.h"
 #include "../tools/ToolsManager.h"
+#include "../project/ProjectUtils.h"
 
 
 GUIManager::GUIManager() {}
@@ -62,7 +63,7 @@ bool GUIManager::is_debug_open() const {
 	return m_debug_open;
 }
 
-const sf::Vector2f & GUIManager::sprite_to_global(sf::Vector2f sprite_pos) const {
+sf::Vector2f GUIManager::sprite_to_global(sf::Vector2f sprite_pos) const {
 
 	const auto& main_sprite = SpriteManager::get().get_cached_drawn_main_sprite();
 	const auto& sprite_bounds = main_sprite.getGlobalBounds();
@@ -74,7 +75,7 @@ const sf::Vector2f & GUIManager::sprite_to_global(sf::Vector2f sprite_pos) const
 
 }
 
-const sf::Vector2f & GUIManager::global_to_sprite(sf::Vector2f global_pos) const {
+sf::Vector2f GUIManager::global_to_sprite(sf::Vector2f global_pos) const {
 
 	const auto& main_sprite = SpriteManager::get().get_cached_drawn_main_sprite();
 	const auto& sprite_bounds = main_sprite.getGlobalBounds();
@@ -460,7 +461,19 @@ void GUIManager::do_gui() {
 
 				auto cfilename = filename.c_str();
 
-				if (!ColliderManager::get().write_colliders_to_file(cfilename)) {
+				bool success = false;
+
+				//// EXPORT DATA TO JSON
+
+				auto json_data = project_to_json();
+
+				{
+					LOG("Exporting the following data:\n\n" << json_data.dump(4) << "\n");
+					write_to_file(cfilename, json_data.dump().c_str());
+					success = true;
+				}
+
+				if (!success) {
 					CLOG("An error has happened while writing the colliders");
 					ImGui::OpenPopup("Error Writing Colliders");
 				}
@@ -468,8 +481,6 @@ void GUIManager::do_gui() {
 					CLOG("Colliders write completed succesfully to file: " << filename);
 					ImGui::CloseCurrentPopup();
 				}
-
-
 			}
 			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
 

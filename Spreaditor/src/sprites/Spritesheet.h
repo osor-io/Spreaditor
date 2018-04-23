@@ -45,6 +45,7 @@ public:
 	int get_sprite_width() const { return m_sprite_width; }
 	int get_sprite_height() const { return m_sprite_height; }
 	bool is_valid() const { return m_valid; }
+	const TexturePacked& get_texture() const { return m_texture; }
 
 
 	static bool write_to_file(const std::string& file, const std::vector<Sprite>& sprites);
