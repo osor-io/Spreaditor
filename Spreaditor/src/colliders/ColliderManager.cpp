@@ -29,32 +29,49 @@ bool ColliderManager::write_colliders_to_file(const char * filename) const {
 	return true;
 }
 
-ColliderManager::json ColliderManager::colliders_to_json() const {
+ColliderManager::json ColliderManager::colliders_to_json(bool ignore_rects) const {
 	auto j = json{};
 
 	auto& j_types = j["types"];
 	auto& j_instances = j["instances"];
 
 	auto i = 0;
-	for (const auto& c : m_colliders) {
 
+	auto colliders = &m_colliders;
+
+	if (ignore_rects) {
+		colliders = new ColliderContainer(m_colliders);
+		for (auto& i : *colliders) {
+			for (auto& j : i.second) {
+				auto & instance = const_cast<ColliderInstance&>(j);
+				instance.rects.clear();
+			}
+		}
+	}
+
+	for (const auto& c : *colliders) {
 		const auto & type = c.first;
-
 		j_types[type.name] = type;
 
 		const auto & instances = c.second;
-
 		for (const auto& instance : instances) {
 			j_instances[type.name][instance.name] = instance;
 		}
 	}
 
+	if (ignore_rects) {
+		delete colliders;
+	}
+
 	return j;
 }
 
-bool ColliderManager::colliders_from_json(const json & j) {
+bool ColliderManager::colliders_from_json(const json & j, bool ignore_rects) {
 
 	ColliderContainer new_colliders{};
+
+	LOG("Reading content:\n\n" << j.dump(4) << "\n\n");
+
 
 	if (j.find("types") == j.end() || j["types"].is_null() || j.find("instances") == j.end() || j["instances"].is_null()) {
 		CLOG_ERROR("We couldn't find types or instances in the file provided");
@@ -79,11 +96,24 @@ bool ColliderManager::colliders_from_json(const json & j) {
 		for (json::iterator it_instance = j_instance.begin(); it_instance != j_instance.end(); ++it_instance) {
 			auto instance_name = it_instance.key();
 			ColliderInstance instance = it_instance.value();
+			if (ignore_rects) {
+				instance.rects.clear();
+			}
 			new_colliders[aux_type].insert(instance);
 		}
 	}
 
+	m_colliders = new_colliders;
 	return true;
+}
+
+void ColliderManager::clear_rects() {
+	for (auto& i : m_colliders) {
+		for (auto& j : i.second) {
+			auto & instance = const_cast<ColliderInstance&>(j);
+			instance.rects.clear();
+		}
+	}
 }
 
 void ColliderManager::draw_collider_gui() {
@@ -735,7 +765,7 @@ void ColliderManager::draw_collider_gui() {
 		// We delete the collider if it was requested for us to do so.
 		if (collider_type_to_remove) {
 			colliders.erase(*collider_type_to_remove);
-			collider_type_to_remove == nullptr;
+			collider_type_to_remove = nullptr;
 		}
 
 		button_to_popup("New Collider Type", [&]() {

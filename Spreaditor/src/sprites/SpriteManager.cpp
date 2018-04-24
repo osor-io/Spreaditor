@@ -47,6 +47,11 @@ void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 	render_target->draw(m_drawn_main_sprite_cached);
 }
 
+json SpriteManager::spritesheet_to_json() const {
+	assert(m_spritesheet);
+	return m_spritesheet->to_json();
+}
+
 bool SpriteManager::write_sprites_to_spritesheet(const char * spritesheet_filename) const {
 	return m_spritesheet->write_to_file(spritesheet_filename, m_spritesheet->get_sprites());
 }

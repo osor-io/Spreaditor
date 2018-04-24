@@ -1,5 +1,4 @@
 #include "Spritesheet.h"
-#include "../resources/TextureManager.h"
 #include "Debug.h"
 #include "File.h"
 #include <tuple>
@@ -37,8 +36,10 @@ Spritesheet::Spritesheet(const std::vector<std::string>& texture_filenames) {
 	}
 
 	// We write the sprites to a temporary file with the spritesheet
-	
+
 	auto temporary_spritesheet_filename = OSManager::get().executable_path() + TEMP_SPRITESHEET_IMAGE_FILENAME;
+
+	// @@TODO: Always load one sprite if we only have one.
 	write_to_file(temporary_spritesheet_filename.c_str(), sprites);
 
 	// We initialize the variables while also reading the texture
@@ -48,6 +49,7 @@ Spritesheet::Spritesheet(const std::vector<std::string>& texture_filenames) {
 	m_sprite_width = sprite_width;
 	m_rows = m_texture.texture->getSize().y / sprite_height;
 	m_cols = m_texture.texture->getSize().x / sprite_width;
+
 
 	construct(m_texture.filename, m_rows, m_cols, m_sprite_width, m_sprite_height, m_sprite_type);
 
@@ -128,13 +130,18 @@ void Spritesheet::construct(const std::string & texture_filename, int rows, int 
 		return;
 	}
 
-	fill_sprite_container();
+	refill_sprite_container();
 
 	if (m_sprite_container.size() == 0) {
 		CLOG_ERROR("We weren't able to detect any sprites from the texture read from " << m_texture.filename);
 		m_valid = false;
 		return;
 	}
+
+	generate_image();
+
+	// We refill with the new image and texture
+	refill_sprite_container();
 }
 
 
@@ -209,9 +216,11 @@ int Spritesheet::count_continuous_regions(const std::vector<bool>& vector, int t
 	return count - 1;
 }
 
-void Spritesheet::fill_sprite_container() {
+void Spritesheet::refill_sprite_container() {
 
 	assert(m_texture.texture);
+
+	m_sprite_container.clear();
 
 	for (auto row = 0; row < m_rows; ++row) {
 		for (auto col = 0; col < m_cols; ++col) {
@@ -254,7 +263,9 @@ bool Spritesheet::fill_image_cache(const std::string & filename) {
 	return true;
 }
 
-Spritesheet::Image Spritesheet::write_to_image(const std::vector<Spritesheet::Sprite>& sprites) {
+Spritesheet::Image Spritesheet::write_to_image(const std::vector<Spritesheet::Sprite>& sprites,
+	unsigned int& cell_side_pixel_length,
+	unsigned int& total_rows_and_cols) {
 
 	CLOG("Creating spritesheet image with current sprites");
 
@@ -272,9 +283,9 @@ Spritesheet::Image Spritesheet::write_to_image(const std::vector<Spritesheet::Sp
 
 	auto spritesheet_side_pixel_length = next_power_of_2(sqrt(max_sprite_width*max_sprite_height*sprite_count));
 
-	auto cell_side_pixel_length = next_power_of_2(max_sprite_width > max_sprite_height ? max_sprite_width : max_sprite_height);
+	cell_side_pixel_length = next_power_of_2(max_sprite_width > max_sprite_height ? max_sprite_width : max_sprite_height);
 
-	auto total_rows_and_cols = spritesheet_side_pixel_length / cell_side_pixel_length;
+	total_rows_and_cols = spritesheet_side_pixel_length / cell_side_pixel_length;
 
 	CLOG("\tImage size: " << spritesheet_side_pixel_length << "x" << spritesheet_side_pixel_length);
 	CLOG("\tSprite size: " << cell_side_pixel_length);
@@ -311,9 +322,43 @@ Spritesheet::Image Spritesheet::write_to_image(const std::vector<Spritesheet::Sp
 
 }
 
+void Spritesheet::generate_image() {
+	auto sprite_side = 0u;
+	auto rows_and_cols = 0u;
+	m_image = write_to_image(m_sprite_container, sprite_side, rows_and_cols);
+	m_rows = m_cols = rows_and_cols;
+	m_sprite_width = m_sprite_height = sprite_side;
+
+	m_texture.clear();
+	m_texture = TexturePacked(m_image);
+	m_sprite_type = SpritesheetMorphology::SQUARE;
+
+	m_valid = true;
+}
+
+bool Spritesheet::write_to_file(const std::string & filename) {
+
+	CLOG("\tSaving Image...");
+
+	if (!m_image.saveToFile(filename)) {
+		CLOG_ERROR("Error saving the pixels to the file: " << filename);
+		return false;
+	}
+	CLOG("Wrote spritesheet to file: " << filename);
+
+	m_saved_to_file = true;
+	m_saved_filename = filename;
+
+	return true;
+}
+
 bool Spritesheet::write_to_file(const std::string & filename, const std::vector<Sprite>& sprites) {
 
-	auto spritesheet_image = write_to_image(sprites);
+	auto sprite_side = 0u;
+	auto rows_and_cols = 0u;
+
+
+	auto spritesheet_image = write_to_image(sprites, sprite_side, rows_and_cols);
 
 	CLOG("\tSaving Image...");
 
@@ -325,4 +370,15 @@ bool Spritesheet::write_to_file(const std::string & filename, const std::vector<
 	return true;
 
 
+}
+
+Spritesheet::json Spritesheet::to_json() {
+	auto j = json{};
+
+	j["rows"] = m_rows;
+	j["cols"] = m_cols;
+	j["sprite_width"] = m_sprite_width;
+	j["sprite_height"] = m_sprite_height;
+
+	return j;
 }

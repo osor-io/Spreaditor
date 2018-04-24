@@ -12,3 +12,5 @@ std::string read_from_file(const char* filename);
 
 std::string extract_filename(const char* full_path);
 
+std::string extract_path(const char * full_path);
+

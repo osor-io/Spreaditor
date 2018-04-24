@@ -35,6 +35,8 @@ public:
 
     void render_main_sprite(sf::RenderTarget* render_target);
 
+	json spritesheet_to_json() const;
+
     bool write_sprites_to_spritesheet(const char* spritesheet_filename) const;
 
 	void set_default_zoom();

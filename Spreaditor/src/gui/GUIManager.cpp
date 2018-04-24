@@ -126,7 +126,149 @@ void GUIManager::do_gui() {
 
 	if (ImGui::BeginMenu("File")) {
 
-		BEGIN_MENU_POPUP_MODAL("New Project From Spritesheet");
+
+
+		BEGIN_MENU_POPUP_MODAL("Export Spritesheet & Colliders");
+		{
+			static auto filename = std::string{};
+
+			static char writing_filename[MAX_OS_FILENAME_SIZE];
+
+			ImGui::Text("Filename: ");
+			ImGui::SameLine();
+			ImGui::InputText("##Filename", writing_filename, MAX_OS_FILENAME_SIZE);
+			ImGui::SameLine();
+			if (ImGui::Button("Explore", ImVec2(120, 0))) {
+				filename = OSManager::get().user_save_file(\
+					//"(*.json) JavaScript Object Notation\0*.json\0"
+				);
+				assert(filename.size() < MAX_OS_FILENAME_SIZE);
+				filename.copy(writing_filename, filename.size());
+				writing_filename[filename.size()] = '\0';
+			}
+
+			auto path = extract_path(writing_filename);
+			auto only_name = extract_filename(writing_filename);
+
+			auto json_name = std::string();
+			auto png_name = std::string();
+
+			if (path.compare("") == 0) {
+				path = OSManager::get().executable_path();
+				json_name = std::string(writing_filename) + ".json";
+				png_name = std::string(writing_filename) + ".png";
+			}
+			else {
+				json_name = std::string(only_name) + ".json";
+				png_name = std::string(only_name) + ".png";
+			}
+
+
+			if (ImGui::BeginChild("##names to export", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 5), true,
+				ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+				ImGui::Text("Path: %s", path.c_str());
+				ImGui::Text("Data File: %s", json_name.c_str());
+				ImGui::Text("Spritesheet File: %s", png_name.c_str());
+
+			}
+			ImGui::EndChild();
+
+
+			// We check if the filename the user has written already exists
+			static auto file_already_exists = false;
+			static auto last_time_checked = .0f;
+			auto current_time = TimeManager::get().get_execution_time().asMilliseconds();
+			if (current_time - last_time_checked > CHECK_FILE_INTERVAL) {
+				last_time_checked = current_time;
+				file_already_exists = file_exists(json_name.c_str()) || file_exists(png_name.c_str());
+			}
+
+			if (file_already_exists) ImGui::Text("WARNING: Files with thone names already exist");
+
+
+			ImGui::TextWrapped("This will export the collider data (types, instances and rects) and "
+				"a spritesheet with the current sprites.");
+
+			IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+			IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+
+				if (!SpriteManager::get().get_spritesheet()) {
+					CLOG("We don't have a spritesheet to export!");
+					ImGui::OpenPopup("Missing Required Data");
+				}
+				else {
+
+					filename.clear();
+					filename.append(writing_filename);
+
+					CLOG("Writing collider data to: " << json_name);
+
+					auto json_data = project_to_json(path.c_str(), json_name.c_str(), png_name.c_str());
+
+					auto success = false;
+
+					// We write the json to a file
+					{
+						LOG("Exporting the following data:\n\n" << json_data.dump(4) << "\n");
+						write_to_file((path + json_name).c_str(), json_data.dump().c_str());
+						success = true;
+					}
+
+					// We write the image to a file
+					{
+						success |= SpriteManager::get().get_spritesheet()->write_to_file(path+png_name);
+					}
+
+					if (!success) {
+						CLOG("An error has happened while writing the required files");
+						ImGui::OpenPopup("Error Writing Files");
+					}
+					else {
+						CLOG("Colliders write completed succesfully to the specified files");
+						ImGui::CloseCurrentPopup();
+					}
+				} // End of if(we have spritesheet to export)
+			}// End of if button accept
+			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+			if (ImGui::BeginPopupModal("Error Writing Files"))
+			{
+				ImGui::Text("There has been an error exporting some of the files:\nFilename (no extensions): \"%s\"", filename.c_str());
+
+				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopupModal("Missing Required Data"))
+			{
+				ImGui::Text("We either don't have sprites or data to export");
+
+				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+				ImGui::EndPopup();
+			}
+
+		}
+		END_MENU_POPUP_MODAL;
+
+		ImGui::Separator();
+
+
+		BEGIN_MENU_POPUP_MODAL("Import Spritesheet");
 		{
 
 			static auto filename = std::string{};
@@ -190,6 +332,10 @@ void GUIManager::do_gui() {
 						CLOG("\tAmount of sprites read: " << spritesheet->get_sprites().size());
 
 						CLOG("Correctly loaded spritesheet from " << filename);
+
+						CLOG("Clearing previous rects");
+						ColliderManager::get().clear_rects();
+
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -225,7 +371,7 @@ void GUIManager::do_gui() {
 		}
 		END_MENU_POPUP_MODAL;
 
-		BEGIN_MENU_POPUP_MODAL("New Project From Group of Sprites");
+		BEGIN_MENU_POPUP_MODAL("Import Group of Sprites");
 		{
 			static auto filenames = std::vector<std::string>();
 
@@ -298,6 +444,10 @@ void GUIManager::do_gui() {
 						CLOG("\tAmount of sprites read: " << spritesheet->get_sprites().size());
 
 						CLOG("Correctly loaded spritesheet from the selected files");
+
+						CLOG("Clearing previous rects");
+						ColliderManager::get().clear_rects();
+
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -332,9 +482,6 @@ void GUIManager::do_gui() {
 
 		}
 		END_MENU_POPUP_MODAL;
-
-		ImGui::Separator();
-
 
 		BEGIN_MENU_POPUP_MODAL("Export Spritesheet");
 		{
@@ -414,7 +561,101 @@ void GUIManager::do_gui() {
 		}
 		END_MENU_POPUP_MODAL;
 
-		BEGIN_MENU_POPUP_MODAL("Export Collider File");
+
+		ImGui::Separator();
+
+
+		BEGIN_MENU_POPUP_MODAL("Import Collider Types & Instances");
+		{
+			static auto filename_buffer = std::string(MAX_OS_FILENAME_SIZE, '\0');
+
+			ImGui::Text("Filename: ");
+			ImGui::SameLine();
+			ImGui::InputText("##Filename", filename_buffer.data(), filename_buffer.capacity());
+
+			// Give the user the option to select the filename with the explorer
+			if (ImGui::Button("Explore", ImVec2(120, 0))) {
+				filename_buffer = OSManager::get().user_open_file(\
+					"(*.json) JavaScript Object Notation\0*.json\0"
+				);
+			}
+
+			static auto filename = std::string();
+			filename = filename_buffer;
+			filename.resize(strlen(filename.c_str()));
+
+			ImGui::Text("This will override the current types and instances in this project.");
+
+			IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+			IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+
+				CLOG("Loading types and instances from file");
+
+				auto found_unexisting_file = false;
+
+				if (!file_exists(filename.c_str())) {
+					CLOG_ERROR("This file doesn't exist: %s" << filename.c_str());
+					found_unexisting_file = true;
+				}
+
+				if (found_unexisting_file) {
+					ImGui::OpenPopup("Incorrect File Path");
+				}
+				else {
+
+					json data = json::parse(read_from_file(filename.c_str()));
+
+					auto loaded = ColliderManager::get().colliders_from_json(data, true);
+
+					if (!loaded) {
+						CLOG_ERROR("Incorrect Format of the JSON file");
+						ImGui::OpenPopup("Incorrect Format");
+					}
+					else {
+
+						CLOG("Correctly read types and instances from file: " << filename.c_str());
+
+						ImGui::CloseCurrentPopup();
+					}
+				}
+			}
+			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+			if (ImGui::BeginPopupModal("Incorrect File Path"))
+			{
+				ImGui::Text("The file you are trying to open doesn't exist: %s", filename.c_str());
+
+				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopupModal("Incorrect Format"))
+			{
+				ImGui::Text("The JSON file could not be parsed correctly");
+
+				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+				ImGui::EndPopup();
+			}
+
+		}
+		END_MENU_POPUP_MODAL;
+
+		BEGIN_MENU_POPUP_MODAL("Export Collider Types & Instances");
 		{
 			static auto filename = std::string{};
 
@@ -446,6 +687,9 @@ void GUIManager::do_gui() {
 			if (file_already_exists) ImGui::Text("WARNING: A File with that name already exists");
 
 
+			ImGui::TextWrapped("This will export the current types and instances without the rects"
+				"that have been defined in case you want to use the same types between projects");
+
 			IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
 			{
 				ImGui::CloseCurrentPopup();
@@ -465,7 +709,7 @@ void GUIManager::do_gui() {
 
 				//// EXPORT DATA TO JSON
 
-				auto json_data = project_to_json();
+				auto json_data = ColliderManager::get().colliders_to_json(true);
 
 				{
 					LOG("Exporting the following data:\n\n" << json_data.dump(4) << "\n");
@@ -498,6 +742,8 @@ void GUIManager::do_gui() {
 			}
 		}
 		END_MENU_POPUP_MODAL;
+
+
 
 
 		// ====== END OF FILE MENU ======

@@ -29,7 +29,7 @@ void OSManager::start_up() {
 
 		m_executable_path = std::string(cpath);
 
-		m_executable_path = m_executable_path.substr(0, m_executable_path.find_last_of("\\/"));
+		m_executable_path = m_executable_path.substr(0, m_executable_path.find_last_of("\\/")+1);
 
 	}
 

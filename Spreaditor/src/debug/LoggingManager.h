@@ -28,7 +28,7 @@ public:
         auto ss = std::stringstream();
         ss << "LOGGING RUN @ " << std::ctime(&now) << "\n\n";
 
-		m_logging_file = OSManager::get().executable_path() + "/" + config::log_filename;
+		m_logging_file = OSManager::get().executable_path() + config::log_filename;
 
         write_to_file(m_logging_file.c_str(), ss.str().c_str());
     }

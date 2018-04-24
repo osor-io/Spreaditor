@@ -82,3 +82,22 @@ std::string extract_filename(const char * full_path) {
 	return("");
 }
 
+
+std::string extract_path(const char * full_path) {
+
+	auto s = std::string(full_path);
+
+	char sep = '/';
+
+#ifdef _WIN32
+	sep = '\\';
+#endif
+
+	size_t i = s.rfind(sep, s.length());
+	if (i != std::string::npos) {
+		return(s.substr(0, i + 1));
+	}
+
+	return("");
+}
+
