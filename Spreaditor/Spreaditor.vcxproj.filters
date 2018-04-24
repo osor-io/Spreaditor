@@ -135,6 +135,9 @@
     <ClCompile Include="src\project\ProjectUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\os\OSStatic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config\Config.h">
@@ -324,6 +327,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\project\ProjectUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\os\OSStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -13,13 +13,31 @@
 #include "../colliders/ColliderManager.h"
 #include "../tools/ToolsManager.h"
 #include "../project/ProjectUtils.h"
-
+#include "../os/OSStatic.h"
 
 GUIManager::GUIManager() {}
 
 GUIManager::~GUIManager() {}
 
 void GUIManager::start_up() {
+
+
+	// Select an appropriate scaling level
+	{
+		/*
+		This could be more specific with resolutions if it was needed.
+		*/
+
+		const auto desktop_resolution = get_desktop_resolution();
+
+		if (desktop_resolution.second <= 1440) {
+			m_scaling_factor = 1.0f;
+		}
+		else {
+			m_scaling_factor = 2.0f;
+		}
+	
+	}
 
 	if (file_exists(config::style_filename)) {
 		CLOG("Loading style from file: " << config::style_filename);

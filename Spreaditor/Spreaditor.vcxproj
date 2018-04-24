@@ -155,6 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dep\src\imconfig.cpp" />
+    <ClCompile Include="src\os\OSStatic.cpp" />
     <ClCompile Include="src\colliders\ColliderManager.cpp" />
     <ClCompile Include="src\colliders\ColliderFactory.cpp" />
     <ClCompile Include="dep\src\detail\pugixml.cpp" />
@@ -196,6 +197,7 @@
     <ClCompile Include="src\tools\ToolsManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\os\OSStatic.h" />
     <ClInclude Include="src\colliders\ColliderManager.h" />
     <ClInclude Include="src\colliders\ColliderFactory.h" />
     <ClInclude Include="dep\include\detail\MetaHolder.h" />

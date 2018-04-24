@@ -11,6 +11,7 @@ OSManager::~OSManager()
 {
 }
 
+
 void OSManager::start_up() {
 
 	assert(WindowManager::get().get_window_handle());
