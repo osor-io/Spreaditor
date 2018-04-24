@@ -18,7 +18,7 @@ nlohmann::json project_to_json(const char* path, const char* data_filename, cons
 	else {
 		auto executable_path = std::string(path);
 	}
-	
+
 	meta["path"] = path;
 	meta["data_filename"] = std::string(data_filename);
 	if (SpriteManager::get().get_spritesheet()) {
@@ -32,14 +32,77 @@ nlohmann::json project_to_json(const char* path, const char* data_filename, cons
 
 	json_data["meta"] = meta;
 
-	// @@DOING @@TODO: Also write the spritesheet data to a json object (do a to_json on the spritesheet)
-
+	json_data["spritesheet"] = SpriteManager::get().get_spritesheet()->to_json();
 
 	return json_data;
 }
 
-void project_from_json(nlohmann::json json_data) {
+bool project_from_json(nlohmann::json json_data, const char* external_spritesheet_filename) {
 
-	// @@TODO: Load stuff based on what we write on the function above.
+	LOG("Loading data:\n\n" << json_data.dump(4) << "\n\n");
 
+	if (json_data.find("meta") == json_data.end()
+		|| json_data["meta"].is_null()) {
+		CLOG_ERROR("We couldn't read the meta attributes from the provided JSON data");
+		return false;
+	}
+	if (json_data.find("colliders") == json_data.end()
+		|| json_data["colliders"].is_null()) {
+		CLOG_ERROR("We couldn't read the colliders from the provided JSON data");
+		return false;
+	}
+	if (json_data.find("spritesheet") == json_data.end()
+		|| json_data["spritesheet"].is_null()) {
+		CLOG_ERROR("We couldn't read the spritesheet from the provided JSON data");
+		return false;
+	}
+
+	json jmeta = json_data["meta"];
+	json jcolliders = json_data["colliders"];
+	json jspritesheet = json_data["spritesheet"];
+
+	auto spritesheet_name = std::string{};
+	{
+		if (external_spritesheet_filename) {
+			spritesheet_name = std::string(external_spritesheet_filename);
+		}
+		else {
+			auto jspritesheet_name = jmeta["spritesheet_filename"];
+			if (!jspritesheet_name.is_null()) {
+				spritesheet_name = jspritesheet_name.get<std::string>();
+			}
+			else {
+				CLOG_ERROR("There is no spritesheet to load in the provided JSON data");
+				return false;
+			}
+		}
+	}
+
+	auto path = std::string{};
+	{
+		auto jpath = jmeta["path"];
+		if (!jpath.is_null()) {
+			path = jpath.get<std::string>();
+		}
+		else {
+			CLOG("There is no path attribute to read in the provided JSON data, we will try to use the current executable path");
+			path = OSManager::get().executable_path();
+		}
+	}
+
+	auto loaded_colliders = ColliderManager::get().colliders_from_json(jcolliders);
+
+	if (!loaded_colliders) {
+		CLOG_ERROR("We couldn't load the provided collider data");
+		return false;
+	}
+
+	auto loaded_spritesheet = SpriteManager::get().load_spritesheet_from_json(path + spritesheet_name, jspritesheet);
+
+	if (!loaded_spritesheet) {
+		CLOG_ERROR("We couldn't load the provided spritesheet");
+		return false;
+	}
+
+	return true;
 }

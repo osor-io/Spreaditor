@@ -33,6 +33,8 @@ public:
     const std::vector<sf::Sprite>& get_sprites() { return m_sprites; }
     const sf::Sprite& get_cached_drawn_main_sprite() { return m_drawn_main_sprite_cached; }
 
+	bool load_spritesheet_from_json(const std::string& filename, const json& data);
+
     void render_main_sprite(sf::RenderTarget* render_target);
 
 	json spritesheet_to_json() const;

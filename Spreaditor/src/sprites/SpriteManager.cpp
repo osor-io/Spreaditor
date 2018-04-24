@@ -30,6 +30,21 @@ bool SpriteManager::load_sprites(const std::vector<std::string>& filenames) {
 }
 
 
+bool SpriteManager::load_spritesheet_from_json(const std::string & filename, const json & data) {
+
+	if (m_spritesheet) {
+		m_spritesheet->from_json(filename, data);
+	}
+	else {
+		m_spritesheet = std::make_unique<Spritesheet>(filename, data);
+	}
+
+	m_sprites = m_spritesheet->get_sprites();
+	m_valid_sprites = m_spritesheet->is_valid();
+	set_default_zoom();
+	return m_valid_sprites;
+}
+
 void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 
 	if (!m_valid_sprites || m_current_main_sprite_index >= m_sprites.size()) return;

@@ -126,7 +126,95 @@ void GUIManager::do_gui() {
 
 	if (ImGui::BeginMenu("File")) {
 
+		BEGIN_MENU_POPUP_MODAL("Import Spritesheet & Colliders");
+		{
+			static auto filename_buffer = std::string(MAX_OS_FILENAME_SIZE, '\0');
 
+			ImGui::Text("Filename: ");
+			ImGui::SameLineS();
+			ImGui::InputText("##Filename", filename_buffer.data(), filename_buffer.capacity());
+			ImGui::SameLineS();
+			// Give the user the option to select the filename with the explorer
+			if (ImGui::Button("Explore", ImVec2(120, 0))) {
+				filename_buffer = OSManager::get().user_open_file(\
+					"(*.json) JavaScript Object Notation\0*.json\0"
+				);
+			}
+
+			static auto filename = std::string();
+			filename = filename_buffer;
+			filename.resize(strlen(filename.c_str()));
+
+			ImGui::Text("This will override the current sprites, types and instances in this project.");
+
+			IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(120, 0))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+			IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(120, 0), accept) {
+
+				CLOG("Loading Spritesheet and colliders from file: " << filename);
+
+				auto found_unexisting_file = false;
+
+				if (!file_exists(filename.c_str())) {
+					CLOG_ERROR("This file doesn't exist: %s" << filename.c_str());
+					found_unexisting_file = true;
+				}
+
+				if (found_unexisting_file) {
+					ImGui::OpenPopup("Incorrect File Path");
+				}
+				else {
+
+					json data = json::parse(read_from_file(filename.c_str()));
+
+					auto loaded = project_from_json(data);
+
+					if (!loaded) {
+						CLOG_ERROR("Incorrect Format of the JSON file");
+						ImGui::OpenPopup("Incorrect Format");
+					}
+					else {
+
+						CLOG("Correctly read types and instances from file: " << filename.c_str());
+
+						ImGui::CloseCurrentPopup();
+					}
+				}
+			}
+			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+			if (ImGui::BeginPopupModal("Incorrect File Path"))
+			{
+				ImGui::Text("The file you are trying to open doesn't exist: %s", filename.c_str());
+
+				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopupModal("Incorrect Format"))
+			{
+				ImGui::Text("The JSON file could not be parsed correctly");
+
+				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+				ImGui::EndPopup();
+			}
+
+		}
+		END_MENU_POPUP_MODAL;
 
 		BEGIN_MENU_POPUP_MODAL("Export Spritesheet & Colliders");
 		{
@@ -388,7 +476,8 @@ void GUIManager::do_gui() {
 			// We show the filenames selected if we have some
 			if (filenames.size() > 0) {
 				if (ImGui::BeginChild("Selected files##SpritesSelectedFilenames", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 5), true,
-					ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
+					ImGuiWindowFlags_AlwaysVerticalScrollbar |
+					ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
 
 					auto index = 0;
 					for (const auto& filename : filenames) {

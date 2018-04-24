@@ -85,6 +85,7 @@ public:
 		UNIFORMLY_PACKED,
 	};
 
+	Spritesheet(const std::string& filename, const json& data);
 	Spritesheet(const std::vector<std::string>& texture_filenames);
 	Spritesheet(const std::string& texture_filename, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
 	Spritesheet(const std::string& texture_filename, int rows, int cols, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
@@ -107,6 +108,7 @@ public:
 	static bool write_to_file(const std::string& file, const std::vector<Sprite>& sprites);
 
 	json to_json();
+	bool from_json(const std::string& filename, const json& data);
 
 private: // Member Functions
 

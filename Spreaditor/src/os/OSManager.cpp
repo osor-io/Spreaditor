@@ -29,7 +29,7 @@ void OSManager::start_up() {
 
 		m_executable_path = std::string(cpath);
 
-		m_executable_path = m_executable_path.substr(0, m_executable_path.find_last_of("\\/")+1);
+		m_executable_path = m_executable_path.substr(0, m_executable_path.find_last_of("\\/") + 1);
 
 	}
 
@@ -66,9 +66,9 @@ std::string OSManager::user_open_file(const char* filters) {
 	return std::move(return_string);
 }
 
-std::vector<std::string> OSManager::user_open_files(const char * filters){
+std::vector<std::string> OSManager::user_open_files(const char * filters) {
 	auto filenames = std::vector<std::string>();
-	
+
 	constexpr auto bufer_size = MAX_OS_FILENAME_SIZE * 256;
 
 	auto dialog_data = OPENFILENAME{};
@@ -92,12 +92,23 @@ std::vector<std::string> OSManager::user_open_files(const char * filters){
 	assert(GetOpenFileName(&dialog_data) == TRUE);
 
 	char* buffer = filename_buffer;
-	std::string directory = buffer;
+	std::string directory(buffer);
 	buffer += (directory.length() + 1);
 	while (*buffer) {
-		std::string filename = buffer;
+		std::string filename(buffer);
 		buffer += (filename.length() + 1);
-		filenames.push_back(std::move(filename));
+
+#ifdef _WIN32
+		auto sep = '\\';
+#else
+		auto sep = '/';
+#endif
+
+		filenames.push_back(directory + sep + filename);
+	}
+
+	if (filenames.size() == 0) {
+		filenames.push_back(directory);
 	}
 
 	return filenames;

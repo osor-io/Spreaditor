@@ -7,6 +7,10 @@
 
 #define TEMP_SPRITESHEET_IMAGE_FILENAME "last_spritesheet.png"
 
+Spritesheet::Spritesheet(const std::string & filename, const json & data) {
+	from_json(filename, data);
+}
+
 Spritesheet::Spritesheet(const std::vector<std::string>& texture_filenames) {
 
 	auto textures = std::vector<TexturePacked>{};
@@ -39,7 +43,6 @@ Spritesheet::Spritesheet(const std::vector<std::string>& texture_filenames) {
 
 	auto temporary_spritesheet_filename = OSManager::get().executable_path() + TEMP_SPRITESHEET_IMAGE_FILENAME;
 
-	// @@TODO: Always load one sprite if we only have one.
 	write_to_file(temporary_spritesheet_filename.c_str(), sprites);
 
 	// We initialize the variables while also reading the texture
@@ -142,6 +145,8 @@ void Spritesheet::construct(const std::string & texture_filename, int rows, int 
 
 	// We refill with the new image and texture
 	refill_sprite_container();
+
+	m_valid = true;
 }
 
 
@@ -381,4 +386,23 @@ Spritesheet::json Spritesheet::to_json() {
 	j["sprite_height"] = m_sprite_height;
 
 	return j;
+}
+
+bool Spritesheet::from_json(const std::string & filename, const json & j) {
+
+	m_rows = j["rows"];
+	m_cols = j["cols"];
+	m_sprite_width = j["sprite_width"];
+	m_sprite_height = j["sprite_height"];
+
+	assert(m_sprite_width == m_sprite_height); // We require square sprites at the moment since that is what we export.
+
+	m_sprite_type = SpritesheetMorphology::SQUARE;
+
+	m_texture.clear(); // This is called anyway in the destructor so it shouldn't be necessary.
+	m_texture = TexturePacked(TextureManager::get().get_required_resource(filename), filename);
+
+	construct(filename, m_rows, m_cols, m_sprite_width, m_sprite_height, m_sprite_type);
+
+	return m_valid;
 }
