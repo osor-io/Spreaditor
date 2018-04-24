@@ -173,7 +173,7 @@ void ToolsManager::draw_tools_gui() {
 
 
 				//// Selecting Type for new rect
-				ImGui::SameLineS();
+				MyImGui::SameLine();
 				static const auto type_tag = std::string("Type: ");
 				if (ImGui::BeginCombo("##ColliderTypeSelector", m_p_selected_type ? (type_tag + m_p_selected_type->name).c_str() : "No Type Selected")) {
 
@@ -197,7 +197,7 @@ void ToolsManager::draw_tools_gui() {
 
 				//// Selecting Instance for new rect
 				if (m_p_selected_type) {
-					ImGui::SameLineS();
+					MyImGui::SameLine();
 					static const auto instance_tag = std::string("Instance: ");
 					if (ImGui::BeginCombo("##ColliderInstanceSelector", m_p_selected_instance ? (instance_tag + m_p_selected_instance->name).c_str() : "No Instance Selected")) {
 
@@ -219,7 +219,7 @@ void ToolsManager::draw_tools_gui() {
 			}
 
 
-			ImGui::SameLineS();
+			MyImGui::SameLine();
 			ImGui::Checkbox("Show All Rects", &m_show_all_rects);
 
 
@@ -230,7 +230,7 @@ void ToolsManager::draw_tools_gui() {
 				m_selected_instance_copy = *m_p_selected_instance;
 
 
-			ImGui::SameLineS();
+			MyImGui::SameLine();
 			ImGui::Text("\t");
 
 

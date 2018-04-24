@@ -23,7 +23,7 @@ const auto padding = ImGui::GetStyle().WindowPadding.x; \
 static float first_button_width = size.x; \
 auto pos = ImGui::GetWindowContentRegionWidth() - first_button_width + padding; \
 ImGui::SetCursorPosX(pos); \
-if (ImGui::Button(text, size)) 
+if (MyImGui::Button(text, size)) 
 
 #define END_BUTTON_ALIGNED_RIGHT_FIRST first_button_width = ImGui::GetItemRectSize().x;
 
@@ -32,7 +32,7 @@ static float ID ## _button_width = size.x; \
 pos -= spacing; \
 pos -= ID ## _button_width; \
 ImGui::SameLine(pos); \
-if (ImGui::Button(text, size)) \
+if (MyImGui::Button(text, size)) \
 
 #define END_BUTTON_ALIGNED_RIGHT_NEXT(ID) ID ## _button_width = ImGui::GetItemRectSize().x;
 

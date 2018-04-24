@@ -129,7 +129,7 @@ void GUIManager::update() {
 	// Scaling
 	{
 		ImGui::GetIO().FontGlobalScale = m_scaling_factor;
-		ImGui::SetSamelineScaling(m_scaling_factor);
+		MyImGui::SetScaling(m_scaling_factor);
 		// @@TODO: Scale also the places where I set pixels exactly like in the samelines and BUTTONS!! (look for ImVec2(120,something))
 	}
 
@@ -149,9 +149,9 @@ void GUIManager::do_gui() {
 			static auto filename_buffer = std::string(MAX_OS_FILENAME_SIZE, '\0');
 
 			ImGui::Text("Filename: ");
-			ImGui::SameLineS();
+			MyImGui::SameLine();
 			ImGui::InputText("##Filename", filename_buffer.data(), filename_buffer.capacity());
-			ImGui::SameLineS();
+			MyImGui::SameLine();
 			// Give the user the option to select the filename with the explorer
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
 				filename_buffer = OSManager::get().user_open_file(\
@@ -241,9 +241,9 @@ void GUIManager::do_gui() {
 			static char writing_filename[MAX_OS_FILENAME_SIZE];
 
 			ImGui::Text("Filename: ");
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			ImGui::InputText("##Filename", writing_filename, MAX_OS_FILENAME_SIZE);
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
 				filename = OSManager::get().user_save_file(\
 					//"(*.json) JavaScript Object Notation\0*.json\0"
@@ -382,9 +382,9 @@ void GUIManager::do_gui() {
 			static char loading_filename[MAX_OS_FILENAME_SIZE];
 
 			ImGui::Text("Filename: ");
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			ImGui::InputText("##Filename", loading_filename, MAX_OS_FILENAME_SIZE);
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
 				filename = OSManager::get().user_open_file(\
 					"(*.png) Portable Network Graphics\0*.png\0"
@@ -597,9 +597,9 @@ void GUIManager::do_gui() {
 			static char writing_filename[MAX_OS_FILENAME_SIZE];
 
 			ImGui::Text("Filename: ");
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			ImGui::InputText("##Filename", writing_filename, MAX_OS_FILENAME_SIZE);
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
 				filename = OSManager::get().user_save_file(\
 					"(*.png) Portable Network Graphics\0*.png\0"
@@ -677,9 +677,9 @@ void GUIManager::do_gui() {
 			static auto filename_buffer = std::string(MAX_OS_FILENAME_SIZE, '\0');
 
 			ImGui::Text("Filename: ");
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			ImGui::InputText("##Filename", filename_buffer.data(), filename_buffer.capacity());
-
+			MyImGui::SameLine();
 			// Give the user the option to select the filename with the explorer
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
 				filename_buffer = OSManager::get().user_open_file(\
@@ -769,9 +769,9 @@ void GUIManager::do_gui() {
 			static char writing_filename[MAX_OS_FILENAME_SIZE];
 
 			ImGui::Text("Filename: ");
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			ImGui::InputText("##Filename", writing_filename, MAX_OS_FILENAME_SIZE);
-			ImGui::SameLine();
+			MyImGui::SameLine();
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
 				filename = OSManager::get().user_save_file(\
 					"(*.json) JavaScript Object Notation\0*.json\0"
@@ -1014,7 +1014,7 @@ void GUIManager::draw_timeline() {
 
 				for (int i = 1; i < sprite_count; i++)
 				{
-					ImGui::SameLine();
+					MyImGui::SameLine();
 					draw_timeline_sprite(sprites[i], i, timeline_sprite_height);
 
 				}
@@ -1094,18 +1094,18 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 	if (ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f"))
 		style.GrabRounding = style.FrameRounding; // Make GrabRounding always the same value as FrameRounding
 	{ bool window_border = (style.WindowBorderSize > 0.0f); if (ImGui::Checkbox("WindowBorder", &window_border)) style.WindowBorderSize = window_border ? 1.0f : 0.0f; }
-	ImGui::SameLine();
+	MyImGui::SameLine();
 	{ bool frame_border = (style.FrameBorderSize > 0.0f); if (ImGui::Checkbox("FrameBorder", &frame_border)) style.FrameBorderSize = frame_border ? 1.0f : 0.0f; }
-	ImGui::SameLine();
+	MyImGui::SameLine();
 	{ bool popup_border = (style.PopupBorderSize > 0.0f); if (ImGui::Checkbox("PopupBorder", &popup_border)) style.PopupBorderSize = popup_border ? 1.0f : 0.0f; }
 
 	// Save/Revert button
 	if (ImGui::Button("Save Local"))
 		*ref = ref_saved_style = style;
-	ImGui::SameLine();
+	MyImGui::SameLine();
 	if (ImGui::Button("Revert Local"))
 		style = *ref;
-	ImGui::SameLine();
+	MyImGui::SameLine();
 	show_help_marker("This saves the local style for the current execution of the program.\n\nThe style saved with this won't be maintained between executions "
 		"so if you close the program and open it again the style saved with this options will be lost.\n\n"
 		"This is meant to save temporarily a style that you like and keep changing it while giving you the option to revert to the saved one quickly if you so desire");
@@ -1120,7 +1120,7 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 		write_to_file(config::style_filename, json_style.dump().c_str());
 
 	}
-	ImGui::SameLine();
+	MyImGui::SameLine();
 	show_help_marker("This saves the local style to a file that will be used when opening the program so the style can be maintained when opening"
 		" and closing the program again.");
 
@@ -1148,7 +1148,7 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 		ImGui::SliderFloat("GrabRounding", &style.GrabRounding, 0.0f, 12.0f, "%.0f");
 		ImGui::Text("Alignment");
 		ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
-		ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine(); show_help_marker("Alignment applies when a button is larger than its text content.");
+		ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f"); MyImGui::SameLine(); show_help_marker("Alignment applies when a button is larger than its text content.");
 		ImGui::TreePop();
 	}
 
@@ -1161,8 +1161,8 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 		filter.Draw("Filter colors", 200);
 
 		static ImGuiColorEditFlags alpha_flags = 0;
-		ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine();
-		ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine();
+		ImGui::RadioButton("Opaque", &alpha_flags, 0); MyImGui::SameLine();
+		ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); MyImGui::SameLine();
 		ImGui::RadioButton("Both", &alpha_flags, ImGuiColorEditFlags_AlphaPreviewHalf);
 
 		ImGui::BeginChild("#colors", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
@@ -1178,10 +1178,10 @@ void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 			{
 				// Tips: in a real user application, you may want to merge and use an icon font into the main font, so instead of "Save"/"Revert" you'd use icons.
 				// Read the FAQ and extra_fonts/README.txt about using icon fonts. It's really easy and super convenient!
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) ref->Colors[i] = style.Colors[i];
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) style.Colors[i] = ref->Colors[i];
+				MyImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) ref->Colors[i] = style.Colors[i];
+				MyImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) style.Colors[i] = ref->Colors[i];
 			}
-			ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+			MyImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 			ImGui::TextUnformatted(name);
 			ImGui::PopID();
 		}

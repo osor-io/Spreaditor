@@ -53,13 +53,40 @@ void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 
 	m_drawn_main_sprite_cached.setOrigin(m_drawn_main_sprite_cached.getTextureRect().width / 2.0f, m_drawn_main_sprite_cached.getTextureRect().height / 2.0f);
 	m_drawn_main_sprite_cached.setScale(m_main_sprite_zoom, m_main_sprite_zoom);
+	auto bounds = m_drawn_main_sprite_cached.getGlobalBounds();
 
-	auto timeline_offset = (TIMELINE_SIZE * ImGui::GetTextLineHeightWithSpacing()) / 2.f;
-	auto main_bar_offset = ImGui::GetTextLineHeightWithSpacing();
+	/*
+	@@TODO @@MAYBE
 
-	m_drawn_main_sprite_cached.setPosition(render_target->getView().getSize().x / 2.f, render_target->getView().getSize().y / 2.f - timeline_offset + main_bar_offset);
+	Maybe also offset the image horizontally based on the current width of the
+	collider explorer and the tools bar so we can center it a bit nicely.
+	
+	*/
+
+	auto timeline_offset = GUIManager::get().get_timeline_height();
+	auto screen_height = render_target->getView().getSize().y;
+	auto vertical_offset = GUIManager::get().get_main_menu_height() + ToolsManager::get().tools_options_bar_height();
+
+	auto vertical_position =
+		vertical_offset
+		+
+		(((screen_height - vertical_offset) - timeline_offset - bounds.height) / 2.f)
+		+
+		bounds.height / 2.0f;
+
+	m_drawn_main_sprite_cached.setPosition(render_target->getView().getSize().x / 2.f, vertical_position);
 
 	render_target->draw(m_drawn_main_sprite_cached);
+
+	bounds = m_drawn_main_sprite_cached.getGlobalBounds();
+	auto border = sf::RectangleShape(sf::Vector2f(bounds.width, bounds.height));
+	border.setFillColor(sf::Color::Transparent);
+	border.setPosition(sf::Vector2f(bounds.left, bounds.top));
+	border.setOutlineThickness(2);
+	border.setOutlineColor(sf::Color::White);
+
+	render_target->draw(border);
+
 }
 
 json SpriteManager::spritesheet_to_json() const {
@@ -79,11 +106,14 @@ void SpriteManager::set_default_zoom() {
 	auto real_sprite_width = m_spritesheet->get_sprite_width();
 	auto real_sprite_height = m_spritesheet->get_sprite_height();
 
+	const auto extra_padding = ImGui::GetTextLineHeightWithSpacing();
+
 	auto vertical_space =
 		ImGui::GetIO().DisplaySize.y
 		- GUIManager::get().get_timeline_height()
 		- GUIManager::get().get_main_menu_height()
-		- ToolsManager::get().tools_options_bar_height();
+		- ToolsManager::get().tools_options_bar_height()
+		- extra_padding * 2;
 
 	auto horizontal_space = ImGui::GetIO().DisplaySize.y * 0.7f;
 
