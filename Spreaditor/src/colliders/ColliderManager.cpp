@@ -6,6 +6,7 @@
 #include "../utils/GUIUtils.h"
 #include "ColliderSerialization.h" 
 #include "File.h"
+#include "../tools/ToolsManager.h"
 
 ColliderManager::ColliderManager() {}
 
@@ -68,10 +69,11 @@ ColliderManager::json ColliderManager::colliders_to_json(bool ignore_rects) cons
 
 bool ColliderManager::colliders_from_json(const json & j, bool ignore_rects) {
 
+	ToolsManager::get().reset_tools();
+
 	ColliderContainer new_colliders{};
 
 	LOG("Reading content:\n\n" << j.dump(4) << "\n\n");
-
 
 	if (j.find("types") == j.end() || j["types"].is_null() || j.find("instances") == j.end() || j["instances"].is_null()) {
 		CLOG_ERROR("We couldn't find types or instances in the file provided");

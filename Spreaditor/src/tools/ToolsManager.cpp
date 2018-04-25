@@ -3,6 +3,7 @@
 #include "../render/RenderManager.h"
 #include "../colliders/ColliderManager.h"
 #include "../sprites/SpriteManager.h"
+#include <limits>
 
 #define INDEX_THRESHOLD_TO_ADD 256
 
@@ -22,6 +23,39 @@ ToolsManager::~ToolsManager() {
 }
 
 void ToolsManager::start_up() {
+
+	auto& style = m_edit_collider_style;
+
+	style.WindowPadding = ImVec2(0, 0);
+	style.PopupRounding = 0.0f;
+	style.FramePadding = ImVec2(0, 0);
+	style.ItemSpacing = ImVec2(0, 0);
+	style.ItemInnerSpacing = ImVec2(0, 0);
+	style.TouchExtraPadding = ImVec2(0, 0);
+	style.IndentSpacing = 0.0f;
+	style.ScrollbarSize = 0.0f;
+	style.GrabMinSize = 0.0f;
+	style.WindowBorderSize = 0.0f;
+	style.ChildBorderSize = 0.0f;
+	style.PopupBorderSize = 0.0f;
+	style.FrameBorderSize = 0.0f;
+	style.WindowRounding = 0.0f;
+	style.ChildRounding = 0.0f;
+	style.FrameRounding = 0.0f;
+	style.ScrollbarRounding = 0.0f;
+	style.GrabRounding = 0.0f;
+	style.WindowTitleAlign = ImVec2(0, 0);
+	style.ButtonTextAlign = ImVec2(0, 0);
+
+	/*
+	@@NOTE
+
+	We can either do hide the resize grip (this) so it doesn't show
+	in he lower left corner or implement a custom ImGui function that 
+	internally behaves like a window but also shows resize grips on all sides
+	
+	*/
+	style.Colors[ImGuiCol_ResizeGrip].w = 0.0f;
 
 }
 
@@ -56,14 +90,27 @@ void ToolsManager::tick() {
 
 			}
 
-			m_new_collider.width = sprite_mouse_position.x;
-			m_new_collider.height = sprite_mouse_position.y;
-
+			m_new_collider.width = sprite_mouse_position.x - m_new_collider.x;
+			m_new_collider.height = sprite_mouse_position.y - m_new_collider.y;
 
 		}
 		else if (m_dragging) { // We just finished collider creation
 
 			m_currently_creating_collider = false;
+
+			// We need to check if the size is not negative (the user dragged from down-right to up-left)
+			{
+				if (m_new_collider.width < 0) {
+					m_new_collider.x += m_new_collider.width;
+					m_new_collider.width *= -1;
+				}
+
+				if (m_new_collider.height < 0) {
+					m_new_collider.y += m_new_collider.height;
+					m_new_collider.height *= -1;
+				}
+
+			}
 
 			if (m_p_selected_type && m_p_selected_instance) {
 
@@ -134,6 +181,10 @@ void ToolsManager::draw_tools_gui() {
 
 	static auto resize_first_time = true;
 
+	auto draw_rects_on_top_of_sprite = true;
+
+	const auto current_sprite_index = SpriteManager::get().get_current_main_sprite_index();
+
 	//// TOOL CONFIGURATION WINDOW
 	{
 		if (ImGui::Begin("##tool options window", nullptr,
@@ -150,18 +201,37 @@ void ToolsManager::draw_tools_gui() {
 			if (m_current_tool == Tool::NONE) {
 
 				ImGui::Text("No Tool Selected");
+				draw_rects_on_top_of_sprite = true;
 
 			}
 			else if (m_current_tool == Tool::CREATE_COLLIDER) {
 				ImGui::Text("Create Rect Tool");
 				show_collider_selection = true;
-
+				draw_rects_on_top_of_sprite = true;
 			}
 			else if (m_current_tool == Tool::EDIT_COLLIDER) {
 
 				ImGui::Text("Edit Collider Tool");
 				show_collider_selection = true;
+				draw_rects_on_top_of_sprite = false;
 
+				if (m_show_all_rects) {
+					for (auto & pair : colliders) {
+						const auto & type = pair.first;
+						auto & instances = pair.second;
+						for (auto & instance : instances) {
+							edit_rects_of_instance(type, const_cast<ColliderInstance&>(instance), current_sprite_index);
+						}
+					}
+
+				}
+				else {
+
+					if (m_p_selected_type &&  m_p_selected_instance) {
+						edit_rects_of_instance(*m_p_selected_type, *m_p_selected_instance, current_sprite_index);
+					}
+
+				}
 
 			}
 			else {
@@ -296,7 +366,9 @@ void ToolsManager::draw_tools_gui() {
 
 
 				auto drawing_collider_rect_origin = GUIManager::get().sprite_to_global(sf::Vector2f(m_new_collider.x, m_new_collider.y));
-				auto drawing_collider_rect_size = GUIManager::get().sprite_to_global(sf::Vector2f(m_new_collider.width, m_new_collider.height));
+				auto drawing_collider_rect_size = GUIManager::get().sprite_to_global(sf::Vector2f(
+					m_new_collider.x + m_new_collider.width,
+					m_new_collider.y + m_new_collider.height));
 
 
 				draw_list->AddRect(drawing_collider_rect_origin, drawing_collider_rect_size,
@@ -335,45 +407,54 @@ void ToolsManager::draw_tools_gui() {
 
 	//// DRAWING APPROPRIATE RECTS ON TOP OF SPRITE
 
-	if (ImGui::Begin("##HiddenFullscreen", nullptr,
-		hidden_flags))
-	{
+	if (draw_rects_on_top_of_sprite) {
+		if (ImGui::Begin("##HiddenFullscreen", nullptr,
+			hidden_flags))
+		{
 
-		ImGui::BeginChild("##AvoidingLimit", ImVec2(0, 0), false, hidden_flags);
+			ImGui::BeginChild("##AvoidingLimit", ImVec2(0, 0), false, hidden_flags);
 
-		// We draw the colliders in any position of the window
-		auto draw_list = ImGui::GetWindowDrawList();
+			// We draw the colliders in any position of the window
+			auto draw_list = ImGui::GetWindowDrawList();
 
-		draw_list->PushClipRectFullScreen();
+			draw_list->PushClipRectFullScreen();
 
-		auto current_sprite_index = SpriteManager::get().get_current_main_sprite_index();
-
-		if (m_show_all_rects) {
-			for (const auto & pair : colliders) {
-				const auto & instances = pair.second;
-				for (const auto & instance : instances) {
-					draw_rects_of_instance(instance, current_sprite_index, &draw_list);
+			if (m_show_all_rects) {
+				for (const auto & pair : colliders) {
+					const auto & instances = pair.second;
+					for (const auto & instance : instances) {
+						draw_rects_of_instance(instance, current_sprite_index, &draw_list);
+					}
 				}
-			}
-
-		}
-		else {
-
-			if (m_p_selected_instance) {
-				
-				draw_rects_of_instance(*m_p_selected_instance, current_sprite_index, &draw_list);
 
 			}
+			else {
 
+				if (m_p_selected_instance) {
+
+					draw_rects_of_instance(*m_p_selected_instance, current_sprite_index, &draw_list);
+
+				}
+
+			}
+
+
+			draw_list->PopClipRect();
+
+
+			ImGui::EndChild();
 		}
-
-
-		draw_list->PopClipRect();
-
-
-		ImGui::EndChild();
+		ImGui::End();
 	}
-	ImGui::End();
+}
+
+void ToolsManager::reset_tools() {
+	m_current_tool = Tool::NONE;
+	m_p_selected_type = nullptr;
+	m_p_selected_instance = nullptr;
+	m_currently_creating_collider = false;
+	m_dragging = false;
+	m_show_all_rects = true;
 }
 
 void ToolsManager::draw_rects_of_instance(const ColliderInstance & instance, int current_sprite_index, ImDrawList ** draw_list) {
@@ -406,15 +487,76 @@ void ToolsManager::draw_rects_of_instance(const ColliderInstance & instance, int
 			}
 
 
-			auto drawing_collider_rect_origin = GUIManager::get().sprite_to_global(sf::Vector2f(rect.x, rect.y));
-			auto drawing_collider_rect_size = GUIManager::get().sprite_to_global(sf::Vector2f(rect.width, rect.height));
+			auto drawing_collider_rect_a = GUIManager::get().sprite_to_global(sf::Vector2f(rect.x, rect.y));
+			auto drawing_collider_rect_b = GUIManager::get().sprite_to_global(sf::Vector2f(rect.x + rect.width, rect.y + rect.height));
 
-			(*draw_list)->AddRectFilled(drawing_collider_rect_origin, drawing_collider_rect_size,
+			(*draw_list)->AddRectFilled(drawing_collider_rect_a, drawing_collider_rect_b,
 				ImGui::GetColorU32((ImVec4)fill_color));
 
-			(*draw_list)->AddRect(drawing_collider_rect_origin, drawing_collider_rect_size,
+			(*draw_list)->AddRect(drawing_collider_rect_a, drawing_collider_rect_b,
 				ImGui::GetColorU32((ImVec4)border_color));
 		}
 	}
+
+}
+
+void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderInstance & instance, int current_sprite_index) {
+
+	auto border_color = ImColor(
+		instance.color.x,
+		instance.color.y,
+		instance.color.z);
+
+	auto fill_color = border_color;
+	fill_color.Value.w = 0.4f;
+
+
+	auto previous_style = ImGui::GetStyle();
+	auto & style = ImGui::GetStyle();
+	style = m_edit_collider_style;
+
+	if (instance.rects.find(current_sprite_index) != instance.rects.end()) {
+		auto count = 0;
+		for (auto& rect : instance.rects.at(current_sprite_index)) {
+
+			auto collider_rect_origin = GUIManager::get().sprite_to_global(sf::Vector2f(rect.x, rect.y));
+			auto collider_rect_size = GUIManager::get().sprite_to_global(sf::Vector2f(rect.x + rect.width, rect.y + rect.height));
+			collider_rect_size -= collider_rect_origin;
+
+			{
+				const auto window_name = std::string("##TestingDrag");
+				ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)fill_color);
+				ImGui::SetNextWindowPos(collider_rect_origin, ImGuiCond_Appearing);
+				ImGui::SetNextWindowSize(collider_rect_size, ImGuiCond_Appearing);
+				ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(std::numeric_limits<float>::max(), std::numeric_limits<float>::max()));
+				ImGui::Begin((window_name + type.name + instance.name + std::to_string(count)).c_str(), nullptr,
+					ImGuiWindowFlags_NoCollapse |
+					ImGuiWindowFlags_NoSavedSettings |
+					ImGuiWindowFlags_NoTitleBar |
+					ImGuiWindowFlags_ResizeFromAnySide |
+					ImGuiWindowFlags_NoScrollbar
+				);
+				{
+
+					auto pos_a = GUIManager::get().global_to_sprite(ImGui::GetWindowPos());
+					auto pos_b = GUIManager::get().global_to_sprite(ImGui::GetWindowPos() + ImGui::GetWindowSize());
+					auto size = pos_b - pos_a;
+
+					rect.x = pos_a.x;
+					rect.y = pos_a.y;
+					rect.width = size.x;
+					rect.height = size.y;
+
+				}
+				ImGui::End();
+				ImGui::PopStyleColor();
+			}
+
+			++count;
+		}
+	}
+
+
+	style = previous_style;
 
 }

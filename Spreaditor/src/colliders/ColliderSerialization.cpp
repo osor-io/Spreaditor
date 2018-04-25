@@ -50,19 +50,19 @@ void from_json(const json & j, AttributeType & v) {
 
 	std::string type_string = j["type"];
 
-	if (type_string.compare("integer")) {
+	if (type_string.compare("integer") == 0) {
 		v.type = ATTRIBUTE_TYPE_INT;
 		v.default_value = j["default_value"].get<int>();
 	}
-	else if (type_string.compare("float")) {
+	else if (type_string.compare("float") == 0) {
 		v.type = ATTRIBUTE_TYPE_FLOAT;
 		v.default_value = j["default_value"].get<float>();
 	}
-	else if (type_string.compare("bool")) {
+	else if (type_string.compare("bool") == 0) {
 		v.type = ATTRIBUTE_TYPE_BOOL;
 		v.default_value = j["default_value"].get<bool>();
 	}
-	else if (type_string.compare("string")) {
+	else if (type_string.compare("string") == 0) {
 		v.type = ATTRIBUTE_TYPE_STRING;
 		v.default_value = j["default_value"].get<std::string>();
 	}
@@ -135,19 +135,19 @@ void from_json(const json & j, AttributeInstance & v) {
 
 	std::string type_string = j["type"];
 
-	if (type_string.compare("integer")) {
+	if (type_string.compare("integer") == 0) {
 		v.type = ATTRIBUTE_TYPE_INT;
 		v.value = j["value"].get<int>();
 	}
-	else if (type_string.compare("float")) {
+	else if (type_string.compare("float") == 0) {
 		v.type = ATTRIBUTE_TYPE_FLOAT;
 		v.value = j["value"].get<float>();
 	}
-	else if (type_string.compare("bool")) {
+	else if (type_string.compare("bool") == 0) {
 		v.type = ATTRIBUTE_TYPE_BOOL;
 		v.value = j["value"].get<bool>();
 	}
-	else if (type_string.compare("string")) {
+	else if (type_string.compare("string") == 0) {
 		v.type = ATTRIBUTE_TYPE_STRING;
 		v.value = j["value"].get<std::string>();
 	}
@@ -166,6 +166,18 @@ void from_json(const json & j, ColliderRect & p) {
 	p.y = j["y"];
 	p.width = j["width"];
 	p.height = j["height"];
+
+
+	if (p.width < 0) {
+		p.x += p.width;
+		p.width *= -1;
+	}
+
+	if (p.height < 0) {
+		p.y += p.height;
+		p.height *= -1;
+	}
+
 }
 
 void to_json(json & j, const Vec4f & v) {
