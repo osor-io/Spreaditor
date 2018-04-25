@@ -538,6 +538,30 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 				);
 				{
 
+					/*
+					@@TODO 
+			
+					Add here a way to delete the rect. I'm thinking
+					that we could use a right click to pop a menu so we can put other options
+					in the future :)
+
+
+					@@TODO
+
+					Also, maybe add here a way to copy the rect to a range of frames?
+					
+
+					@@TODO
+
+					Focus this window when the user clicks on the rect in the explorer
+
+
+					@@TODO
+
+					Make it clear that this window is focused: Changes in colour, alpha, borders, etc.
+
+					*/
+
 					auto pos_a = GUIManager::get().global_to_sprite(ImGui::GetWindowPos());
 					auto pos_b = GUIManager::get().global_to_sprite(ImGui::GetWindowPos() + ImGui::GetWindowSize());
 					auto size = pos_b - pos_a;
