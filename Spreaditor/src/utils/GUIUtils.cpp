@@ -1,6 +1,10 @@
 #include "GUIUtils.h"
 
 
+std::string generate_edit_rect_name(const std::string& type, const std::string& instance, int sprite_index, int rect_index){
+	return std::string(("##EditingRectWindow_" + type + "_" + instance + "_" + std::to_string(sprite_index) + std::to_string(rect_index)));
+}
+
 void show_help_marker(const char* desc){
     ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered())

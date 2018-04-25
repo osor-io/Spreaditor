@@ -117,7 +117,7 @@ void Spritesheet::construct(const std::string & texture_filename, int rows, int 
 	construct(texture_filename, rows, cols, m_sprite_width, m_sprite_height, type);
 }
 
-void Spritesheet::construct(const std::string & texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type) {
+void Spritesheet::construct(const std::string & texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type, bool regenerate_image) {
 
 	if (m_image_cache != nullptr) delete m_image_cache;
 
@@ -141,9 +141,16 @@ void Spritesheet::construct(const std::string & texture_filename, int rows, int 
 		return;
 	}
 
-	generate_image();
+	if (regenerate_image) {
+		generate_image();
+	}
+	else {
+		CLOG("Assuming that the spritesheet provided has been created by us and not modifyed");
+		m_image = m_texture.texture->copyToImage();
+	}
 
 	// We refill with the new image and texture
+	CLOG("Finally reading sprites from loaded image");
 	refill_sprite_container();
 
 	m_valid = true;
@@ -402,7 +409,7 @@ bool Spritesheet::from_json(const std::string & filename, const json & j) {
 	m_texture.clear(); // This is called anyway in the destructor so it shouldn't be necessary.
 	m_texture = TexturePacked(TextureManager::get().get_required_resource(filename), filename);
 
-	construct(filename, m_rows, m_cols, m_sprite_width, m_sprite_height, m_sprite_type);
+	construct(filename, m_rows, m_cols, m_sprite_width, m_sprite_height, m_sprite_type, false);
 
 	return m_valid;
 }

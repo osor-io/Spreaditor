@@ -68,9 +68,8 @@ ImGui::OpenPopup("Error##GeneralErrorPopup");
 
 
 
-
-
+std::string generate_edit_rect_name(const std::string& type, const std::string& instance, int sprite_index, int rect_index);
 
 void show_help_marker(const char* desc);
 
-void button_to_popup(const char* name, std::function<void()> popup_content, std::function<void()> on_button = [](){});
+void button_to_popup(const char* name, std::function<void()> popup_content, std::function<void()> on_button = []() {});

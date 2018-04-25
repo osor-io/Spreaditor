@@ -6,6 +6,7 @@
 #include <imgui.h>
 #include <imgui-SFML.h>
 
+
 class ToolsManager : public Manager<ToolsManager> {
 	friend class CRSP<ToolsManager>;
 private:
@@ -22,7 +23,7 @@ public:
 	void draw_tools_gui();
 
 	void reset_tools();
-
+	void reread_rect_positions() { m_reread_rects = true; }
 
 private:
 
@@ -55,6 +56,8 @@ private:
 	ImColor m_new_collider_color{ 255,0,0,130 };
 	bool m_dragging{ false };
 
+	//// Collider Editing
+	bool m_reread_rects{ false };
 
 	//// Collider Rect Rendering
 	bool m_show_all_rects{ true };

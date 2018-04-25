@@ -7,6 +7,7 @@
 #include "ColliderSerialization.h" 
 #include "File.h"
 #include "../tools/ToolsManager.h"
+#include "../sprites/SpriteManager.h"
 
 ColliderManager::ColliderManager() {}
 
@@ -72,8 +73,6 @@ bool ColliderManager::colliders_from_json(const json & j, bool ignore_rects) {
 	ToolsManager::get().reset_tools();
 
 	ColliderContainer new_colliders{};
-
-	LOG("Reading content:\n\n" << j.dump(4) << "\n\n");
 
 	if (j.find("types") == j.end() || j["types"].is_null() || j.find("instances") == j.end() || j["instances"].is_null()) {
 		CLOG_ERROR("We couldn't find types or instances in the file provided");
@@ -619,17 +618,53 @@ void ColliderManager::draw_collider_gui() {
 							}
 
 							//// RECTS
-							for (const auto& rect_group : instance.rects) {
+							for (auto& rect_group : instance.rects) {
 
 								auto sprite_id = rect_group.first;
 
-								for (const auto& rect : rect_group.second) {
-									ImGui::Text("Rect (x = %f, y = %f, width = %f, height = %f) [sprite %d]",
-										rect.x,
-										rect.y,
-										rect.width,
-										rect.height,
+								auto rect_index = 0;
+								for (auto& rect : rect_group.second) {
+
+									const auto rect_window_name = generate_edit_rect_name(
+										collider_type.name,
+										instance.name,
+										SpriteManager::get().get_current_main_sprite_index(),
+										rect_index);
+
+									auto is_selected = rect_window_name.compare(m_selected_window_name) == 0;
+
+									auto node_flags =
+										ImGuiTreeNodeFlags_OpenOnArrow |
+										ImGuiTreeNodeFlags_OpenOnDoubleClick |
+										(is_selected ? ImGuiTreeNodeFlags_Selected : 0);
+
+									auto node_open = ImGui::TreeNodeEx((void*)&rect, node_flags,
+										"Rect %d [sprite %d]",
+										rect_index,
 										sprite_id);
+
+									if (ImGui::IsItemClicked()) {
+										m_selected_window_name = rect_window_name;
+										ImGui::SetWindowFocus(rect_window_name.c_str());
+									}
+
+									if (node_open)
+									{
+										ImGui::Text("Pos:  "); ImGui::SameLine();
+										if (ImGui::InputFloat2("##Position", &(rect.x))) {
+											ToolsManager::get().reread_rect_positions();
+										}
+
+										ImGui::Text("Size: "); ImGui::SameLine();
+										if (ImGui::InputFloat2("##Size", &(rect.width))) {
+											ToolsManager::get().reread_rect_positions();
+										}
+
+										ImGui::TreePop();
+									}
+
+									++rect_index;
+
 								}
 							}
 

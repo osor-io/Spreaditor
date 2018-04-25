@@ -39,8 +39,6 @@ nlohmann::json project_to_json(const char* path, const char* data_filename, cons
 
 bool project_from_json(nlohmann::json json_data, const char* external_spritesheet_filename) {
 
-	LOG("Loading data:\n\n" << json_data.dump(4) << "\n\n");
-
 	if (json_data.find("meta") == json_data.end()
 		|| json_data["meta"].is_null()) {
 		CLOG_ERROR("We couldn't read the meta attributes from the provided JSON data");

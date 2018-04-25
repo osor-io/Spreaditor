@@ -114,7 +114,7 @@ private: // Member Functions
 
 	void construct(const std::string& texture_filename, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
 	void construct(const std::string& texture_filename, int rows, int cols, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
-	void construct(const std::string& texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type = SpritesheetMorphology::SQUARE);
+	void construct(const std::string& texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type = SpritesheetMorphology::SQUARE, bool regenerate_image = true);
 
 	std::tuple<int, int> infer_rows_and_columns(const Image&);
 

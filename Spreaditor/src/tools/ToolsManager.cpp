@@ -3,6 +3,7 @@
 #include "../render/RenderManager.h"
 #include "../colliders/ColliderManager.h"
 #include "../sprites/SpriteManager.h"
+#include "GUIUtils.h"
 #include <limits>
 
 #define INDEX_THRESHOLD_TO_ADD 256
@@ -51,9 +52,9 @@ void ToolsManager::start_up() {
 	@@NOTE
 
 	We can either do hide the resize grip (this) so it doesn't show
-	in he lower left corner or implement a custom ImGui function that 
+	in he lower left corner or implement a custom ImGui function that
 	internally behaves like a window but also shows resize grips on all sides
-	
+
 	*/
 	style.Colors[ImGuiCol_ResizeGrip].w = 0.0f;
 
@@ -446,6 +447,9 @@ void ToolsManager::draw_tools_gui() {
 		}
 		ImGui::End();
 	}
+
+
+	m_reread_rects = false;
 }
 
 void ToolsManager::reset_tools() {
@@ -510,26 +514,47 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 	auto fill_color = border_color;
 	fill_color.Value.w = 0.4f;
 
+	auto focused_color = border_color;
+	focused_color.Value.w = 0.6f;
+
 
 	auto previous_style = ImGui::GetStyle();
 	auto & style = ImGui::GetStyle();
 	style = m_edit_collider_style;
 
 	if (instance.rects.find(current_sprite_index) != instance.rects.end()) {
-		auto count = 0;
-		for (auto& rect : instance.rects.at(current_sprite_index)) {
+		auto rect_index = 0;
+
+		/* @@TODO @@REMOVE
+		auto index_to_delete = -1;
+		*/
+
+		auto& rects = instance.rects.at(current_sprite_index);
+
+		for (auto& rect : rects) {
 
 			auto collider_rect_origin = GUIManager::get().sprite_to_global(sf::Vector2f(rect.x, rect.y));
 			auto collider_rect_size = GUIManager::get().sprite_to_global(sf::Vector2f(rect.x + rect.width, rect.y + rect.height));
 			collider_rect_size -= collider_rect_origin;
 
 			{
-				const auto window_name = std::string("##TestingDrag");
+				const auto window_name = generate_edit_rect_name(type.name, instance.name, current_sprite_index, rect_index);
+
 				ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)fill_color);
-				ImGui::SetNextWindowPos(collider_rect_origin, ImGuiCond_Appearing);
-				ImGui::SetNextWindowSize(collider_rect_size, ImGuiCond_Appearing);
+				ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)focused_color);
+
+				if (m_reread_rects) {
+					ImGui::SetNextWindowPos(collider_rect_origin, ImGuiCond_Always);
+					ImGui::SetNextWindowSize(collider_rect_size, ImGuiCond_Always);
+				}
+				else {
+					ImGui::SetNextWindowPos(collider_rect_origin, ImGuiCond_Appearing);
+					ImGui::SetNextWindowSize(collider_rect_size, ImGuiCond_Appearing);
+				}
+
 				ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(std::numeric_limits<float>::max(), std::numeric_limits<float>::max()));
-				ImGui::Begin((window_name + type.name + instance.name + std::to_string(count)).c_str(), nullptr,
+
+				ImGui::Begin(window_name.c_str(), nullptr,
 					ImGuiWindowFlags_NoCollapse |
 					ImGuiWindowFlags_NoSavedSettings |
 					ImGuiWindowFlags_NoTitleBar |
@@ -539,8 +564,8 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 				{
 
 					/*
-					@@TODO 
-			
+					@@TODO
+
 					Add here a way to delete the rect. I'm thinking
 					that we could use a right click to pop a menu so we can put other options
 					in the future :)
@@ -549,38 +574,80 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 					@@TODO
 
 					Also, maybe add here a way to copy the rect to a range of frames?
-					
-
-					@@TODO
-
-					Focus this window when the user clicks on the rect in the explorer
-
-
-					@@TODO
-
-					Make it clear that this window is focused: Changes in colour, alpha, borders, etc.
-
 					*/
 
-					auto pos_a = GUIManager::get().global_to_sprite(ImGui::GetWindowPos());
-					auto pos_b = GUIManager::get().global_to_sprite(ImGui::GetWindowPos() + ImGui::GetWindowSize());
-					auto size = pos_b - pos_a;
+					auto window_pos_a = ImGui::GetWindowPos();
+					auto window_size = ImGui::GetWindowSize();
+					auto window_pos_b = window_pos_a + window_size;
 
-					rect.x = pos_a.x;
-					rect.y = pos_a.y;
-					rect.width = size.x;
-					rect.height = size.y;
+					if (!m_reread_rects) {
+
+						auto pos_a = GUIManager::get().global_to_sprite(window_pos_a);
+						auto pos_b = GUIManager::get().global_to_sprite(window_pos_b);
+						auto size = pos_b - pos_a;
+
+						rect.x = pos_a.x;
+						rect.y = pos_a.y;
+						rect.width = size.x;
+						rect.height = size.y;
+					}
+
+					if (ImGui::IsWindowFocused()) {
+						auto draw_list = ImGui::GetWindowDrawList();
+						draw_list->PushClipRectFullScreen();
+						draw_list->AddRect(window_pos_a, window_pos_b,
+							ImGui::GetColorU32((ImVec4)border_color));
+
+						ColliderManager::get().set_selected_window_name(window_name);
+					}
+
+					{
+						style = previous_style;
+
+						if (ImGui::BeginPopupContextWindow()) {
+
+							if (ImGui::MenuItem("Delete Rect")) {
+								/*
+								@@TODO
+								
+								Call the collider manager and tell it to delete a
+								particular rect in a particular type, instance and sprite.
+
+								We can't do it here because then the position will be set wrongly
+								if we are setting the position with the Inputs in the editor.
+
+								Just delete the rect in the .tick or .update of the collider editor
+								and call .reread_rect_positions() so this doesn't set the colliders
+								that remain to the old positions that the one with their index had.
+								*/
+								assert(false); // Read above you mad man.
+							}
+							ImGui::EndPopup();
+						}
+						
+						style = m_edit_collider_style;
+					}
+
 
 				}
 				ImGui::End();
 				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
 			}
 
-			++count;
+			++rect_index;
 		}
+
+		/* @@TODO @@REMOVE
+		if (index_to_delete >= 0 && index_to_delete < rects.size()) {
+			CLOG("Deleting Rect (" << index_to_delete << "): " << &rects[index_to_delete]);
+			rects.erase(rects.begin() + index_to_delete);
+			index_to_delete = -1;
+			m_reread_rects = true;
+		}
+		*/
+
+
 	}
-
-
 	style = previous_style;
-
 }
