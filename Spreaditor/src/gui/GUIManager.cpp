@@ -36,7 +36,7 @@ void GUIManager::start_up() {
 		else {
 			m_scaling_factor = 2.0f;
 		}
-	
+
 	}
 
 	if (file_exists(config::style_filename)) {
@@ -327,7 +327,7 @@ void GUIManager::do_gui() {
 
 					// We write the image to a file
 					{
-						success |= SpriteManager::get().get_spritesheet()->write_to_file(path+png_name);
+						success |= SpriteManager::get().get_spritesheet()->write_to_file(path + png_name);
 					}
 
 					if (!success) {
@@ -396,6 +396,16 @@ void GUIManager::do_gui() {
 				filename.copy(loading_filename, filename.size());
 				loading_filename[filename.size()] = '\0';
 			}
+
+			/*
+			@@TODO: Give here the option to input
+				rows, cols,
+				sprite width and sprite height
+
+				Also, check what fails when generating the spritesheet for
+				the little martial (I overwrite some of em)
+			*/
+
 
 			ImGui::TextWrapped("This will close the current project without keeping unsaved changes.");
 
@@ -991,7 +1001,39 @@ void GUIManager::draw_timeline() {
 				main_sprite_index_cached = main_sprite_index_cached > sprite_count - 1 ? sprite_count - 1 : main_sprite_index_cached;
 				main_sprite_index_cached = main_sprite_index_cached < 0 ? 0 : main_sprite_index_cached;
 
-				SpriteManager::get().set_current_main_sprite_index(main_sprite_index_cached);
+
+				ImGui::Spacing();
+
+				if (SpriteManager::get().is_playing_animation()) {
+
+					if (ImGui::Button("Pause")) {
+						SpriteManager::get().toggle_play_animation();
+					}
+
+				}
+				else {
+
+					if (ImGui::Button("Play")) {
+						SpriteManager::get().toggle_play_animation();
+					}
+				}
+				
+				auto& from = SpriteManager::get().first_animation_frame();
+				ImGui::DragInt("##AnimationFromFrame", &from, 1.0f, 0, sprite_count - 2, "From: %.0f");
+
+				auto& to = SpriteManager::get().last_animation_frame();
+				ImGui::DragInt("##AnimationToFrame", &to, 1.0f, from, sprite_count - 1, "To: %.0f");
+
+				static auto framerate{ 15 };
+
+				if (ImGui::InputInt("Framerate##Framerate", &framerate)) {
+					SpriteManager::get().set_animation_framerate(framerate);
+				}
+
+				if (!SpriteManager::get().is_playing_animation()) {
+					SpriteManager::get().set_current_main_sprite_index(main_sprite_index_cached);
+				}
+
 			}
 			else {
 				ImGui::Text("\tNo sprites available");

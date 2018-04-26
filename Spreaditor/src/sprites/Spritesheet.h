@@ -131,7 +131,7 @@ private: // Member Functions
 	this is because a sprite drawn with pieces that are not all
 	connected to each other might be detected as new sprites incorrectly.
 	*/
-	int count_continuous_regions(const std::vector<bool>& vector, int threshold = 4);
+	int count_continuous_regions(const std::vector<bool>& vector, int threshold = 0);
 
 	void refill_sprite_container();
 

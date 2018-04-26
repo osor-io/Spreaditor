@@ -4,6 +4,7 @@
 #include "../tools/ToolsManager.h"
 #include "../render/RenderManager.h"
 #include "../math/OtherMath.h"
+#include "../time/TimeManager.h"
 
 SpriteManager::SpriteManager() {}
 
@@ -14,7 +15,7 @@ void SpriteManager::start_up() {}
 void SpriteManager::shut_down() {}
 
 bool SpriteManager::load_spritesheet(const char * filename) {
-	m_spritesheet = std::make_unique<Spritesheet>(filename);
+	m_spritesheet = std::make_unique<Spritesheet>(filename, Spritesheet::SpritesheetMorphology::UNIFORMLY_PACKED);
 	m_sprites = m_spritesheet->get_sprites();
 	m_valid_sprites = m_spritesheet->is_valid();
 	set_default_zoom();
@@ -47,45 +48,85 @@ bool SpriteManager::load_spritesheet_from_json(const std::string & filename, con
 
 void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 
-	if (!m_valid_sprites || m_current_main_sprite_index >= m_sprites.size()) return;
+	if (!m_valid_sprites) return;
 
-	m_drawn_main_sprite_cached = m_sprites[m_current_main_sprite_index];
+	auto sprite_index_to_draw{ -1 };
 
-	m_drawn_main_sprite_cached.setOrigin(m_drawn_main_sprite_cached.getTextureRect().width / 2.0f, m_drawn_main_sprite_cached.getTextureRect().height / 2.0f);
-	m_drawn_main_sprite_cached.setScale(m_main_sprite_zoom, m_main_sprite_zoom);
-	auto bounds = m_drawn_main_sprite_cached.getGlobalBounds();
+	//// ANIMATION
+	{
+		if (m_last_animation_frame < m_first_animation_frame) {
+			m_last_animation_frame = m_first_animation_frame;
+		}
 
-	/*
-	@@TODO @@MAYBE
+		// We select the sprite based on animation if we have to
+		if (m_playing_animation) {
 
-	Maybe also offset the image horizontally based on the current width of the
-	collider explorer and the tools bar so we can center it a bit nicely.
-	
-	*/
+			static auto previous_ms = TimeManager::get().cycles_to_ms(TimeManager::get().query_cycle_counter());
+			auto current_ms = TimeManager::get().cycles_to_ms(TimeManager::get().query_cycle_counter());
+			auto advanced_ms = current_ms - previous_ms;
+			previous_ms = current_ms;
+			m_seconds_in_current_frame += advanced_ms / 1000.f;
+			auto difference = m_seconds_in_current_frame - m_seconds_per_frame;
 
-	auto timeline_offset = GUIManager::get().get_timeline_height();
-	auto screen_height = render_target->getView().getSize().y;
-	auto vertical_offset = GUIManager::get().get_main_menu_height() + ToolsManager::get().tools_options_bar_height();
+			if (difference > 0.f) {
+				m_seconds_in_current_frame = fmod(difference, m_seconds_per_frame);
+				++m_current_animation_sprite;
+				if (m_current_animation_sprite > m_last_animation_frame) {
+					m_current_animation_sprite = m_first_animation_frame;
+				}
+			}
 
-	auto vertical_position =
-		vertical_offset
-		+
-		(((screen_height - vertical_offset) - timeline_offset - bounds.height) / 2.f)
-		+
-		bounds.height / 2.0f;
+			sprite_index_to_draw = m_current_animation_sprite;
+		}
+		else {
+			sprite_index_to_draw = m_current_main_sprite_index;
+		}
+	}
 
-	m_drawn_main_sprite_cached.setPosition(render_target->getView().getSize().x / 2.f, vertical_position);
 
-	render_target->draw(m_drawn_main_sprite_cached);
+	if (sprite_index_to_draw >= m_sprites.size() || sprite_index_to_draw < 0) return;
 
-	bounds = m_drawn_main_sprite_cached.getGlobalBounds();
-	auto border = sf::RectangleShape(sf::Vector2f(bounds.width, bounds.height));
-	border.setFillColor(sf::Color::Transparent);
-	border.setPosition(sf::Vector2f(bounds.left, bounds.top));
-	border.setOutlineThickness(2);
-	border.setOutlineColor(sf::Color::White);
+	//// DRAWING
+	{
 
-	render_target->draw(border);
+		m_drawn_main_sprite_cached = m_sprites[sprite_index_to_draw];
+
+		m_drawn_main_sprite_cached.setOrigin(m_drawn_main_sprite_cached.getTextureRect().width / 2.0f, m_drawn_main_sprite_cached.getTextureRect().height / 2.0f);
+		m_drawn_main_sprite_cached.setScale(m_main_sprite_zoom, m_main_sprite_zoom);
+		auto bounds = m_drawn_main_sprite_cached.getGlobalBounds();
+
+		/*
+		@@TODO @@MAYBE
+
+		Maybe also offset the image horizontally based on the current width of the
+		collider explorer and the tools bar so we can center it a bit nicely.
+
+		*/
+
+		auto timeline_offset = GUIManager::get().get_timeline_height();
+		auto screen_height = render_target->getView().getSize().y;
+		auto vertical_offset = GUIManager::get().get_main_menu_height() + ToolsManager::get().tools_options_bar_height();
+
+		auto vertical_position =
+			vertical_offset
+			+
+			(((screen_height - vertical_offset) - timeline_offset - bounds.height) / 2.f)
+			+
+			bounds.height / 2.0f;
+
+		m_drawn_main_sprite_cached.setPosition(render_target->getView().getSize().x / 2.f, vertical_position);
+
+		render_target->draw(m_drawn_main_sprite_cached);
+
+		bounds = m_drawn_main_sprite_cached.getGlobalBounds();
+		auto border = sf::RectangleShape(sf::Vector2f(bounds.width, bounds.height));
+		border.setFillColor(sf::Color::Transparent);
+		border.setPosition(sf::Vector2f(bounds.left, bounds.top));
+		border.setOutlineThickness(2);
+		border.setOutlineColor(sf::Color::White);
+
+		render_target->draw(border);
+	}
 
 }
 
