@@ -108,6 +108,112 @@ bool ColliderManager::colliders_from_json(const json & j, bool ignore_rects) {
 	return true;
 }
 
+void ColliderManager::request_rect_to_delete(const RectToDelete & rect) {
+
+	m_rects_to_delete.push_back(rect);
+
+}
+
+
+template<typename Cont, typename It>
+auto toggle_indices(Cont &cont, It beg, It end) -> decltype(std::end(cont))
+{
+	int helpIndx(0);
+	return std::stable_partition(std::begin(cont), std::end(cont),
+		[&](decltype(*std::begin(cont)) const& val) -> bool {
+		return std::find(beg, end, helpIndx++) == end;
+	});
+}
+
+struct ColliderInstanceToDelete {
+	std::string name;
+	std::unordered_map<int, std::vector<int>> rects;
+
+	bool operator==(const ColliderInstanceToDelete& other) const {
+		return (name.compare(other.name) == 0);
+	}
+
+	const bool operator<(const ColliderInstanceToDelete &other) const {
+		return (name < other.name);
+	}
+
+};
+using InstanceContainerToDelete = std::set<ColliderInstanceToDelete>;
+using ColliderContainerToDelete = std::map<std::string, InstanceContainerToDelete>;
+
+void ColliderManager::update() {
+
+	// We delete the requested rects
+
+	if (m_rects_to_delete.size() > 0) {
+
+		// We need to update the positions of the rects in the edit tool
+		// since we are going to change the indices.
+		ToolsManager::get().reread_rect_positions();
+
+		auto delete_container = ColliderContainerToDelete{};
+
+		// First we fill our internal structure to know what to delete
+		for (auto& rect : m_rects_to_delete) {
+
+			if (delete_container.find(rect.type_name) == delete_container.end()) {
+				delete_container.insert(std::make_pair(rect.type_name, InstanceContainerToDelete{}));
+			}
+
+			auto temp_instance = ColliderInstanceToDelete{};
+			temp_instance.name = rect.instance_name;
+
+			if (delete_container.at(rect.type_name).find(temp_instance) == delete_container.at(rect.type_name).end()) {
+				delete_container.at(rect.type_name).insert(temp_instance);
+			}
+
+			auto stored_instance_iter = delete_container.at(rect.type_name).find(temp_instance);
+
+			assert(stored_instance_iter != delete_container.at(rect.type_name).end());
+
+			auto& stored_instance = const_cast<ColliderInstanceToDelete&>(*stored_instance_iter);
+
+			auto& rect_indices = stored_instance.rects[rect.sprite_index];
+
+			rect_indices.push_back(rect.rect_index);
+
+		}
+
+
+		// And now we find the real instance and delete the rects from it
+		for (auto& p : delete_container) {
+
+			auto type_name = p.first;
+			auto aux_type = create_collider_type(type_name, Vec4f());
+
+			auto& real_instances = m_colliders.at(aux_type);
+
+			for (auto& instance : p.second) {
+				auto instance_name = instance.name;
+				auto aux_instance = create_collider_instance(aux_type, instance_name);
+
+				auto real_instance = real_instances.find(aux_instance);
+				assert(real_instance != real_instances.end());
+
+
+				for (auto& rect_p : instance.rects) {
+					auto sprite_index = rect_p.first;
+					auto& indexes_to_delete = rect_p.second;
+
+					auto& real_rects = const_cast<std::vector<ColliderRect>&>(real_instance->rects.at(sprite_index));
+
+					// We finally delete all required indices
+					real_rects.erase(toggle_indices(real_rects, std::begin(indexes_to_delete), std::end(indexes_to_delete)), real_rects.end());
+
+				}
+			}
+		}
+
+		m_rects_to_delete.clear();
+	}
+
+}
+
 void ColliderManager::clear_rects() {
 	for (auto& i : m_colliders) {
 		for (auto& j : i.second) {

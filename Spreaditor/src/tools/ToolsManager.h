@@ -19,7 +19,7 @@ public:
 	float tools_width()const { return m_tools_width; };
 	float tools_options_bar_height() const { return m_tools_options_bar_height; }
 
-	void tick();
+	void update();
 	void draw_tools_gui();
 
 	void reset_tools();

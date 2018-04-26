@@ -52,8 +52,9 @@ inline void tick() {
     TimeManager::get().begin_tick();
     {    
         WindowManager::get().manage_events();
+		ColliderManager::get().update();
         GUIManager::get().update();
-		ToolsManager::get().tick();
+		ToolsManager::get().update();
     }
     TimeManager::get().end_tick();
 

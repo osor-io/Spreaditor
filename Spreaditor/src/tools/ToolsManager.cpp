@@ -64,7 +64,7 @@ void ToolsManager::shut_down() {
 
 }
 
-void ToolsManager::tick() {
+void ToolsManager::update() {
 
 	auto dragging = ImGui::IsMouseDragging();
 
@@ -525,10 +525,6 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 	if (instance.rects.find(current_sprite_index) != instance.rects.end()) {
 		auto rect_index = 0;
 
-		/* @@TODO @@REMOVE
-		auto index_to_delete = -1;
-		*/
-
 		auto& rects = instance.rects.at(current_sprite_index);
 
 		for (auto& rect : rects) {
@@ -609,7 +605,7 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 							if (ImGui::MenuItem("Delete Rect")) {
 								/*
 								@@TODO
-								
+
 								Call the collider manager and tell it to delete a
 								particular rect in a particular type, instance and sprite.
 
@@ -620,11 +616,19 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 								and call .reread_rect_positions() so this doesn't set the colliders
 								that remain to the old positions that the one with their index had.
 								*/
-								assert(false); // Read above you mad man.
+
+								auto to_delete = RectToDelete{};
+								to_delete.type_name = type.name;
+								to_delete.instance_name = instance.name;
+								to_delete.sprite_index = current_sprite_index;
+								to_delete.rect_index = rect_index;
+
+								ColliderManager::get().request_rect_to_delete(to_delete);
+
 							}
 							ImGui::EndPopup();
 						}
-						
+
 						style = m_edit_collider_style;
 					}
 
