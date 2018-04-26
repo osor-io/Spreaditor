@@ -728,8 +728,12 @@ void ColliderManager::draw_collider_gui() {
 
 								auto sprite_id = rect_group.first;
 
+								ImGui::PushID(sprite_id);
+
 								auto rect_index = 0;
 								for (auto& rect : rect_group.second) {
+
+									ImGui::PushID(rect_index);
 
 									const auto rect_window_name = generate_edit_rect_name(
 										collider_type.name,
@@ -766,12 +770,24 @@ void ColliderManager::draw_collider_gui() {
 											ToolsManager::get().reread_rect_positions();
 										}
 
+										if (ImGui::Button("Delete Rect")) {
+											auto to_delete = RectToDelete{};
+											to_delete.type_name = collider_type.name;
+											to_delete.instance_name = instance.name;
+											to_delete.sprite_index = sprite_id;
+											to_delete.rect_index = rect_index;
+
+											request_rect_to_delete(to_delete);
+										}
+
 										ImGui::TreePop();
 									}
 
 									++rect_index;
 
+									ImGui::PopID();
 								}
+								ImGui::PopID();
 							}
 
 							button_to_popup("Delete Collider Instance", [&]() {
