@@ -40,6 +40,8 @@ public:
 
 	void request_rect_to_delete(const RectToDelete& rect);
 
+	void add_rect_to_sprites(ColliderInstance& instance, ColliderRect rect, int from, int to);
+
 	void update();
 
 	/**

@@ -114,6 +114,12 @@ void ColliderManager::request_rect_to_delete(const RectToDelete & rect) {
 
 }
 
+void ColliderManager::add_rect_to_sprites(ColliderInstance & instance, ColliderRect rect, int from, int to) {
+	for (auto i = from; i <= to; ++i) {
+		instance.rects[i].push_back(rect);
+	}
+}
+
 
 template<typename Cont, typename It>
 auto toggle_indices(Cont &cont, It beg, It end) -> decltype(std::end(cont))

@@ -22,6 +22,22 @@ bool SpriteManager::load_spritesheet(const char * filename) {
 	return m_valid_sprites;
 }
 
+bool SpriteManager::load_spritesheet(const char * filename, int rows, int cols){
+	m_spritesheet = std::make_unique<Spritesheet>(filename, rows, cols, Spritesheet::SpritesheetMorphology::UNIFORMLY_PACKED);
+	m_sprites = m_spritesheet->get_sprites();
+	m_valid_sprites = m_spritesheet->is_valid();
+	set_default_zoom();
+	return m_valid_sprites;
+}
+
+bool SpriteManager::load_spritesheet(const char * filename, int rows, int cols, int width, int height){
+	m_spritesheet = std::make_unique<Spritesheet>(filename, rows, cols, width, height, Spritesheet::SpritesheetMorphology::UNIFORMLY_PACKED);
+	m_sprites = m_spritesheet->get_sprites();
+	m_valid_sprites = m_spritesheet->is_valid();
+	set_default_zoom();
+	return m_valid_sprites;
+}
+
 bool SpriteManager::load_sprites(const std::vector<std::string>& filenames) {
 	m_spritesheet = std::make_unique<Spritesheet>(filenames);
 	m_sprites = m_spritesheet->get_sprites();
@@ -67,6 +83,14 @@ void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 			previous_ms = current_ms;
 			m_seconds_in_current_frame += advanced_ms / 1000.f;
 			auto difference = m_seconds_in_current_frame - m_seconds_per_frame;
+
+			/*
+			@@TODO
+			
+			Check here possible inconsistency with how much time we 
+			spend in each frame. Seen sometimes with high framerates (60+).
+			*/
+
 
 			if (difference > 0.f) {
 				m_seconds_in_current_frame = fmod(difference, m_seconds_per_frame);

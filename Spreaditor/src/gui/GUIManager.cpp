@@ -130,7 +130,6 @@ void GUIManager::update() {
 	{
 		ImGui::GetIO().FontGlobalScale = m_scaling_factor;
 		MyImGui::SetScaling(m_scaling_factor);
-		// @@TODO: Scale also the places where I set pixels exactly like in the samelines and BUTTONS!! (look for ImVec2(120,something))
 	}
 
 
@@ -289,7 +288,7 @@ void GUIManager::do_gui() {
 				file_already_exists = file_exists(json_name.c_str()) || file_exists(png_name.c_str());
 			}
 
-			if (file_already_exists) ImGui::Text("WARNING: Files with thone names already exist");
+			if (file_already_exists) ImGui::Text("WARNING: Files with those names already exist");
 
 
 			ImGui::TextWrapped("This will export the collider data (types, instances and rects) and "
@@ -397,14 +396,53 @@ void GUIManager::do_gui() {
 				loading_filename[filename.size()] = '\0';
 			}
 
-			/*
-			@@TODO: Give here the option to input
-				rows, cols,
-				sprite width and sprite height
+			static auto spritesheet_option{ 0 };
+			const char* items[] = { "None", "Rows and Columns", "Rows, Columns and Sprite Size" };
+			static const char* value = items[0];
+			if (ImGui::BeginCombo("Spritesheet Info", value)) // The second parameter is the label previewed before opening the combo.
+			{
+				for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+				{
+					bool is_selected = (value == items[n]);
+					if (ImGui::Selectable(items[n], is_selected)) {
+						value = items[n];
+					}
 
-				Also, check what fails when generating the spritesheet for
-				the little martial (I overwrite some of em)
-			*/
+					if (is_selected) {
+						spritesheet_option = n;
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+			for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+				if (value == items[n]) {
+					spritesheet_option = n;
+				}
+			}
+
+			static auto rows = 1;
+			static auto cols = 1;
+
+			if (spritesheet_option == 1 || spritesheet_option == 2) { // The user knows rows and cols 
+				ImGui::Text("Rows:   "); ImGui::SameLine();
+				ImGui::InputInt("##spritesheet_rows", &rows);
+
+				ImGui::Text("Columns:"); ImGui::SameLine();
+				ImGui::InputInt("##spritesheet_cols", &cols);
+			}
+
+
+			static auto sprite_width = 32;
+			static auto sprite_height = 32;
+
+			if (spritesheet_option == 2) { // The user knows sprite width and height
+				ImGui::Text("Sprite Width:"); ImGui::SameLine();
+				ImGui::InputInt("##spritesheet_width", &sprite_width);
+
+				ImGui::Text("Sprite Height:"); ImGui::SameLine();
+				ImGui::InputInt("##spritesheet_height", &sprite_height);
+			}
 
 
 			ImGui::TextWrapped("This will close the current project without keeping unsaved changes.");
@@ -431,7 +469,18 @@ void GUIManager::do_gui() {
 				}
 				else {
 
-					auto loaded = SpriteManager::get().load_spritesheet(cfilename);
+					auto loaded = false;
+
+					if (spritesheet_option == 1) {
+						loaded = SpriteManager::get().load_spritesheet(cfilename, rows, cols);
+					}
+					else if (spritesheet_option == 2) {
+						loaded = SpriteManager::get().load_spritesheet(cfilename, rows, cols, sprite_width, sprite_height);
+					}
+					else {
+						loaded = SpriteManager::get().load_spritesheet(cfilename);
+					}
+
 
 					auto spritesheet = SpriteManager::get().get_spritesheet();
 
@@ -1017,17 +1066,22 @@ void GUIManager::draw_timeline() {
 						SpriteManager::get().toggle_play_animation();
 					}
 				}
-				
+
 				auto& from = SpriteManager::get().first_animation_frame();
 				ImGui::DragInt("##AnimationFromFrame", &from, 1.0f, 0, sprite_count - 2, "From: %.0f");
 
 				auto& to = SpriteManager::get().last_animation_frame();
 				ImGui::DragInt("##AnimationToFrame", &to, 1.0f, from, sprite_count - 1, "To: %.0f");
 
-				static auto framerate{ 15 };
+				from = from > sprite_count ? sprite_count : (from < 0 ? 0 : from);
+				to = to < from ? from : (to > sprite_count ? sprite_count : (to < 0 ? 0 : to));
 
-				if (ImGui::InputInt("Framerate##Framerate", &framerate)) {
+				static auto framerate{ 15 };
+				static auto update_framerate_initial = true;
+
+				if (ImGui::InputInt("Framerate##Framerate", &framerate) || update_framerate_initial) {
 					SpriteManager::get().set_animation_framerate(framerate);
+					update_framerate_initial = false;
 				}
 
 				if (!SpriteManager::get().is_playing_animation()) {

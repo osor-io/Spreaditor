@@ -142,7 +142,17 @@ void ToolsManager::update() {
 
 }
 
+
+//// POPUPS DATA
+
+// Copy Rects To Other Sprites
+static auto copy_rects_popup_open = false;
+static ColliderInstance* instance_to_copy = nullptr;
+static ColliderRect* rect_to_copy = nullptr;
+
+
 void ToolsManager::draw_tools_gui() {
+
 
 	//// Check that our types and instances are correct
 	auto & colliders = ColliderManager::get().get_non_const_colliders();
@@ -330,7 +340,6 @@ void ToolsManager::draw_tools_gui() {
 
 	//// MAIN TOOL WINDOW
 	{
-
 		if (ImGui::Begin("Tools Explorer", nullptr,
 			ImGuiWindowFlags_NoMove |
 			ImGuiWindowFlags_NoResize |
@@ -403,11 +412,9 @@ void ToolsManager::draw_tools_gui() {
 			m_tools_width = ImGui::GetWindowWidth();
 		}
 		ImGui::End();
-
 	}
 
 	//// DRAWING APPROPRIATE RECTS ON TOP OF SPRITE
-
 	if (draw_rects_on_top_of_sprite) {
 		if (ImGui::Begin("##HiddenFullscreen", nullptr,
 			hidden_flags))
@@ -448,6 +455,58 @@ void ToolsManager::draw_tools_gui() {
 		ImGui::End();
 	}
 
+
+
+	//// POPUPS SHOW
+
+	/*
+	Copy Rects to other sprites
+
+	The data for this one is:
+
+	static auto copy_rects_popup_open = false;
+	static ColliderInstance* instance_to_copy = nullptr;
+	static ColliderRect* rect_to_copy = nullptr;
+	*/
+	if (copy_rects_popup_open) ImGui::OpenPopup("Copy To Other Sprites");
+	if (ImGui::BeginPopup("Copy To Other Sprites")) {
+		auto sprite_count = SpriteManager::get().get_sprites().size();
+		static auto from = current_sprite_index;
+		static auto to = from + 1;
+
+		ImGui::Text("Copy Rect to all Sprites: ");
+		ImGui::DragInt("##CopyFromFrame", &from, 1.0f, 0, sprite_count - 1, "From: %.0f");
+		ImGui::DragInt("##CopyToFrame", &to, 1.0f, from, sprite_count - 1, "To: %.0f");
+
+		from = from > sprite_count ? sprite_count : (from < 0 ? 0 : from);
+		to = to < from ? from : (to > sprite_count ? sprite_count : (to < 0 ? 0 : to));
+
+		IF_BUTTON_ALIGNED_RIGHT_FIRST("Cancel", ImVec2(0, 0))
+		{
+			instance_to_copy = nullptr;
+			rect_to_copy = nullptr;
+			copy_rects_popup_open = false;
+			ImGui::CloseCurrentPopup();
+		}
+		END_BUTTON_ALIGNED_RIGHT_FIRST;
+
+		IF_BUTTON_ALIGNED_RIGHT_NEXT("Accept", ImVec2(0, 0), accept) {
+
+			CLOG("Copying Rect to frames from " << from << " to " << to);
+
+			assert(instance_to_copy);
+			assert(rect_to_copy);
+
+			ColliderManager::get().add_rect_to_sprites(*instance_to_copy, *rect_to_copy, from, to);
+			instance_to_copy = nullptr;
+			rect_to_copy = nullptr;
+			copy_rects_popup_open = false;
+			ImGui::CloseCurrentPopup();
+		}
+		END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
+
+		ImGui::EndPopup();
+	}
 
 	m_reread_rects = false;
 }
@@ -550,6 +609,14 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 
 				ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(std::numeric_limits<float>::max(), std::numeric_limits<float>::max()));
 
+				/*
+				@@TODO
+
+				Implement a new function or a new flag that allows our window
+				to NOT have a minimum size so it doesn't keep us from having
+				colliders smaller than ImGui's smallest window size.
+
+				*/
 				ImGui::Begin(window_name.c_str(), nullptr,
 					ImGuiWindowFlags_NoCollapse |
 					ImGuiWindowFlags_NoSavedSettings |
@@ -558,20 +625,6 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 					ImGuiWindowFlags_NoScrollbar
 				);
 				{
-
-					/*
-					@@TODO
-
-					Add here a way to delete the rect. I'm thinking
-					that we could use a right click to pop a menu so we can put other options
-					in the future :)
-
-
-					@@TODO
-
-					Also, maybe add here a way to copy the rect to a range of frames?
-					*/
-
 					auto window_pos_a = ImGui::GetWindowPos();
 					auto window_size = ImGui::GetWindowSize();
 					auto window_pos_b = window_pos_a + window_size;
@@ -603,20 +656,7 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 						if (ImGui::BeginPopupContextWindow()) {
 
 							if (ImGui::MenuItem("Delete Rect")) {
-								/*
-								@@TODO
-
-								Call the collider manager and tell it to delete a
-								particular rect in a particular type, instance and sprite.
-
-								We can't do it here because then the position will be set wrongly
-								if we are setting the position with the Inputs in the editor.
-
-								Just delete the rect in the .tick or .update of the collider editor
-								and call .reread_rect_positions() so this doesn't set the colliders
-								that remain to the old positions that the one with their index had.
-								*/
-
+							
 								auto to_delete = RectToDelete{};
 								to_delete.type_name = type.name;
 								to_delete.instance_name = instance.name;
@@ -626,6 +666,13 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 								ColliderManager::get().request_rect_to_delete(to_delete);
 
 							}
+
+							if (ImGui::MenuItem("Copy To Other Sprites##MenuItem")) {
+								instance_to_copy = &instance;
+								rect_to_copy = &rect;
+								copy_rects_popup_open = true;
+							}
+
 							ImGui::EndPopup();
 						}
 
@@ -642,16 +689,7 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 			++rect_index;
 		}
 
-		/* @@TODO @@REMOVE
-		if (index_to_delete >= 0 && index_to_delete < rects.size()) {
-			CLOG("Deleting Rect (" << index_to_delete << "): " << &rects[index_to_delete]);
-			rects.erase(rects.begin() + index_to_delete);
-			index_to_delete = -1;
-			m_reread_rects = true;
-		}
-		*/
-
-
+		
 	}
 	style = previous_style;
 }

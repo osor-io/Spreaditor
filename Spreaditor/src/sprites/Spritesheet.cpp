@@ -119,7 +119,10 @@ void Spritesheet::construct(const std::string & texture_filename, int rows, int 
 
 void Spritesheet::construct(const std::string & texture_filename, int rows, int cols, int sprite_width, int sprite_height, SpritesheetMorphology type, bool regenerate_image) {
 
-	if (m_image_cache != nullptr) delete m_image_cache;
+	if (m_image_cache != nullptr) {
+		delete m_image_cache;
+		m_image_cache = nullptr;
+	}
 
 	if (!m_texture.texture) {
 		CLOG_ERROR("We couldn't load the texture from the file " << m_texture.filename);
@@ -293,9 +296,9 @@ Spritesheet::Image Spritesheet::write_to_image(const std::vector<Spritesheet::Sp
 			max_sprite_height = sprite.getTextureRect().height;
 	}
 
-	auto spritesheet_side_pixel_length = next_power_of_2(sqrt(max_sprite_width*max_sprite_height*sprite_count));
-
 	cell_side_pixel_length = next_power_of_2(max_sprite_width > max_sprite_height ? max_sprite_width : max_sprite_height);
+
+	auto spritesheet_side_pixel_length = next_power_of_2(sqrt(cell_side_pixel_length*cell_side_pixel_length*sprite_count));
 
 	total_rows_and_cols = spritesheet_side_pixel_length / cell_side_pixel_length;
 

@@ -23,6 +23,8 @@ public:
 
 
 	bool load_spritesheet(const char* filename);
+	bool load_spritesheet(const char* filename, int rows, int cols);
+	bool load_spritesheet(const char* filename, int rows, int cols, int sprite_width, int sprite_height);
 	bool load_sprites(const std::vector<std::string>& filenames);
 	bool load_spritesheet_from_json(const std::string& filename, const json& data);
 	json spritesheet_to_json() const;
