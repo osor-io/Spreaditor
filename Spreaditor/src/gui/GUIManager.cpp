@@ -188,6 +188,12 @@ void GUIManager::do_gui() {
 
 					json data = json::parse(read_from_file(filename.c_str()));
 
+					/*
+					@@TODO
+
+					See why in some PCs an assertion fails when loading the the texture
+					of the image.
+					*/
 					auto loaded = project_from_json(data);
 
 					if (!loaded) {
