@@ -147,20 +147,47 @@ void GUIManager::do_gui() {
 		{
 			static auto filename_buffer = std::string(MAX_OS_FILENAME_SIZE, '\0');
 
-			ImGui::Text("Filename: ");
+			ImGui::Text("Name: ");
 			MyImGui::SameLine();
-			ImGui::InputText("##Filename", filename_buffer.data(), filename_buffer.capacity());
+			ImGui::InputText("##Name", filename_buffer.data(), filename_buffer.capacity());
 			MyImGui::SameLine();
 			// Give the user the option to select the filename with the explorer
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
 				filename_buffer = OSManager::get().user_open_file(\
-					"(*.json) JavaScript Object Notation\0*.json\0"
+					// "(*.json) JavaScript Object Notation\0*.json\0"
 				);
 			}
 
 			static auto filename = std::string();
 			filename = filename_buffer;
 			filename.resize(strlen(filename.c_str()));
+
+
+			auto path = extract_path(filename.c_str());
+			auto only_name = extract_filename(filename.c_str());
+
+			auto json_name = std::string();
+			auto png_name = std::string();
+
+			if (path.compare("") == 0) {
+				path = OSManager::get().executable_path();
+				json_name = std::string(filename.c_str()) + ".json";
+				png_name = std::string(filename.c_str()) + ".png";
+			}
+			else {
+				json_name = std::string(only_name) + ".json";
+				png_name = std::string(only_name) + ".png";
+			}
+
+
+			if (ImGui::BeginChild("##names to export", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 5), true,
+				ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+				ImGui::Text("Path: %s", path.c_str());
+				ImGui::Text("Data File: %s", json_name.c_str());
+				ImGui::Text("Spritesheet File: %s", png_name.c_str());
+
+			}
+			ImGui::EndChild();
 
 			ImGui::Text("This will override the current sprites, types and instances in this project.");
 
@@ -176,8 +203,13 @@ void GUIManager::do_gui() {
 
 				auto found_unexisting_file = false;
 
-				if (!file_exists(filename.c_str())) {
-					CLOG_ERROR("This file doesn't exist: %s" << filename.c_str());
+				if (!file_exists(json_name.c_str())) {
+					CLOG_ERROR("This file doesn't exist: %s" << json_name.c_str());
+					found_unexisting_file = true;
+				}
+
+				if (!file_exists(png_name.c_str())) {
+					CLOG_ERROR("This file doesn't exist: %s" << png_name.c_str());
 					found_unexisting_file = true;
 				}
 
@@ -186,9 +218,9 @@ void GUIManager::do_gui() {
 				}
 				else {
 
-					json data = json::parse(read_from_file(filename.c_str()));
+					json data = json::parse(read_from_file(json_name.c_str()));
 
-					auto loaded = project_from_json(data);
+					auto loaded = project_from_json(data, png_name.c_str());
 
 					if (!loaded) {
 						CLOG_ERROR("Incorrect Format of the JSON file");

@@ -616,6 +616,8 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 				to NOT have a minimum size so it doesn't keep us from having
 				colliders smaller than ImGui's smallest window size.
 
+				@see CalcSizeAfterConstraint
+				@see WindowMinSize (change it in style)
 				*/
 				ImGui::Begin(window_name.c_str(), nullptr,
 					ImGuiWindowFlags_NoCollapse |

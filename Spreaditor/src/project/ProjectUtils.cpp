@@ -95,7 +95,20 @@ bool project_from_json(nlohmann::json json_data, const char* external_spriteshee
 		return false;
 	}
 
-	auto loaded_spritesheet = SpriteManager::get().load_spritesheet_from_json(path + spritesheet_name, jspritesheet);
+	auto loaded_spritesheet = false;
+
+	if (file_exists(spritesheet_name.c_str())) {
+		 loaded_spritesheet = SpriteManager::get().load_spritesheet_from_json(spritesheet_name, jspritesheet);
+	}
+	else if (file_exists((path + spritesheet_name).c_str())) {
+		 loaded_spritesheet = SpriteManager::get().load_spritesheet_from_json(path + spritesheet_name, jspritesheet);
+	}
+	else if (file_exists((OSManager::get().executable_path() + spritesheet_name).c_str())) {
+		 loaded_spritesheet = SpriteManager::get().load_spritesheet_from_json(OSManager::get().executable_path() + spritesheet_name, jspritesheet);
+	}
+	else {
+		assert(false && "We can't find the provided spritesheet file");
+	}
 
 	if (!loaded_spritesheet) {
 		CLOG_ERROR("We couldn't load the provided spritesheet");
