@@ -85,7 +85,7 @@ void SpriteManager::render_main_sprite(sf::RenderTarget* render_target) {
 			auto difference = m_seconds_in_current_frame - m_seconds_per_frame;
 
 			/*
-			@@TODO
+			@@TODO @@MAYBE
 			
 			Check here possible inconsistency with how much time we 
 			spend in each frame. Seen sometimes with high framerates (60+).

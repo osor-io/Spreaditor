@@ -68,7 +68,6 @@ std::string OSManager::user_open_file(const char* filters) {
 }
 
 std::vector<std::string> OSManager::user_open_files(const char * filters) {
-	auto filenames = std::vector<std::string>();
 
 	constexpr auto bufer_size = MAX_OS_FILENAME_SIZE * 256;
 
@@ -90,7 +89,11 @@ std::vector<std::string> OSManager::user_open_files(const char * filters) {
 	dialog_data.lpstrInitialDir = NULL;
 	dialog_data.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
 
-	assert(GetOpenFileName(&dialog_data) == TRUE);
+	if (!(GetOpenFileName(&dialog_data) == TRUE)) {
+		return std::vector<std::string>();
+	}
+
+	auto filenames = std::vector<std::string>();
 
 	char* buffer = filename_buffer;
 	std::string directory(buffer);

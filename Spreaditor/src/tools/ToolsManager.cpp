@@ -609,16 +609,7 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 
 				ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(std::numeric_limits<float>::max(), std::numeric_limits<float>::max()));
 
-				/*
-				@@TODO
-
-				Implement a new function or a new flag that allows our window
-				to NOT have a minimum size so it doesn't keep us from having
-				colliders smaller than ImGui's smallest window size.
-
-				@see CalcSizeAfterConstraint
-				@see WindowMinSize (change it in style)
-				*/
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(COLLIDER_WINDOW_MIN_SIZE, COLLIDER_WINDOW_MIN_SIZE));
 				ImGui::Begin(window_name.c_str(), nullptr,
 					ImGuiWindowFlags_NoCollapse |
 					ImGuiWindowFlags_NoSavedSettings |
@@ -684,8 +675,9 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 
 				}
 				ImGui::End();
-				ImGui::PopStyleColor();
-				ImGui::PopStyleColor();
+				ImGui::PopStyleVar();
+
+				ImGui::PopStyleColor(2);
 			}
 
 			++rect_index;

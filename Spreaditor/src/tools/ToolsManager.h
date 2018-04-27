@@ -7,6 +7,8 @@
 #include <imgui-SFML.h>
 
 
+#define COLLIDER_WINDOW_MIN_SIZE 5
+
 class ToolsManager : public Manager<ToolsManager> {
 	friend class CRSP<ToolsManager>;
 private:

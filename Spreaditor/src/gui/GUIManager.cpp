@@ -39,32 +39,38 @@ void GUIManager::start_up() {
 
 	}
 
-	if (file_exists(config::style_filename)) {
-		CLOG("Loading style from file: " << config::style_filename);
-		auto file_content = read_from_file(config::style_filename);
+	// We draw the mouse cursor ourselves
+	ImGui::GetIO().MouseDrawCursor = true;
 
-		auto json_data = json::parse(file_content, nullptr, false);
+	// Loading the appropriate style
+	{
+		auto load_default_style = [&]() {
+			auto & style = ImGui::GetStyle();
+			style.WindowRounding = 0.0f;
+			ImGui::StyleColorsDark();
+		};
 
-		if (json_data.is_discarded()) {
-			CLOG("\tThe style file is not a valid file, ignoring style loading.");
+		if (file_exists(config::style_filename)) {
+			CLOG("Loading style from file: " << config::style_filename);
 
-			// @@TODO: Load here a default style that is generally usable and we are happy with
+			auto file_content = read_from_file(config::style_filename);
+			auto json_data = json::parse(file_content, nullptr, false);
 
+			if (json_data.is_discarded()) {
+				CLOG("\tThe style file is not a valid file, ignoring style loading.");
+				load_default_style();
+			}
+			else {
+				style_from_json(json_data);
+			}
 		}
 		else {
-			style_from_json(json_data);
+			CLOG("\tStyle file not found, loading default style.");
+			load_default_style();
 		}
 	}
 
-	// We are not using this font right now
-	/*
-	ImGuiIO& io = ImGui::GetIO();
-	io.Fonts->Clear();
-	m_font = io.Fonts->AddFontFromMemoryCompressedTTF(cafe_compressed_data, cafe_compressed_size, 18.0f);
-	ImGui::SFML::UpdateFontTexture();
-	*/
 
-	ImGui::GetIO().MouseDrawCursor = true;
 
 }
 
@@ -145,23 +151,23 @@ void GUIManager::do_gui() {
 
 		BEGIN_MENU_POPUP_MODAL("Import Spritesheet & Colliders");
 		{
-			static auto filename_buffer = std::string(MAX_OS_FILENAME_SIZE, '\0');
+			static char writing_filename[MAX_OS_FILENAME_SIZE];
 
 			ImGui::Text("Name: ");
 			MyImGui::SameLine();
-			ImGui::InputText("##Name", filename_buffer.data(), filename_buffer.capacity());
+			ImGui::InputText("##Name", writing_filename, MAX_OS_FILENAME_SIZE);
 			MyImGui::SameLine();
 			// Give the user the option to select the filename with the explorer
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
-				filename_buffer = OSManager::get().user_open_file(\
-					// "(*.json) JavaScript Object Notation\0*.json\0"
+				auto filename = OSManager::get().user_save_file(\
+					//"(*.json) JavaScript Object Notation\0*.json\0"
 				);
+				assert(filename.size() < MAX_OS_FILENAME_SIZE);
+				filename.copy(writing_filename, filename.size());
+				writing_filename[filename.size()] = '\0';
 			}
 
-			static auto filename = std::string();
-			filename = filename_buffer;
-			filename.resize(strlen(filename.c_str()));
-
+			auto filename = std::string(writing_filename);
 
 			auto path = extract_path(filename.c_str());
 			auto only_name = extract_filename(filename.c_str());
@@ -204,12 +210,12 @@ void GUIManager::do_gui() {
 				auto found_unexisting_file = false;
 
 				if (!file_exists(json_name.c_str())) {
-					CLOG_ERROR("This file doesn't exist: %s" << json_name.c_str());
+					CLOG_ERROR("This file doesn't exist: " << json_name.c_str());
 					found_unexisting_file = true;
 				}
 
 				if (!file_exists(png_name.c_str())) {
-					CLOG_ERROR("This file doesn't exist: %s" << png_name.c_str());
+					CLOG_ERROR("This file doesn't exist: " << png_name.c_str());
 					found_unexisting_file = true;
 				}
 
@@ -236,9 +242,10 @@ void GUIManager::do_gui() {
 			}
 			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
 
-			if (ImGui::BeginPopupModal("Incorrect File Path"))
+			if (ImGui::BeginPopupModal("Incorrect File Path", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				ImGui::Text("The file you are trying to open doesn't exist: %s", filename.c_str());
+				ImGui::Text("The file you are trying to open doesn't exist:");
+				ImGui::TextWrapped("%s", filename.c_str());
 
 				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
 				{
@@ -539,9 +546,10 @@ void GUIManager::do_gui() {
 			}
 			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
 
-			if (ImGui::BeginPopupModal("Incorrect File Path"))
+			if (ImGui::BeginPopupModal("Incorrect File Path", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				ImGui::Text("The spritesheet file you are trying to open doesn't exist:\nPath: \"%s\"", filename.c_str());
+				ImGui::Text("The spritesheet file you are trying to open doesn't exist:");
+				ImGui::TextWrapped("%s", filename.c_str());
 
 				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
 				{
@@ -613,7 +621,7 @@ void GUIManager::do_gui() {
 
 				for (const auto& filename : filenames) {
 					if (!file_exists(filename.c_str())) {
-						CLOG_ERROR("This file doesn't exist: %s" << filename.c_str());
+						CLOG_ERROR("This file doesn't exist: " << filename.c_str());
 						found_unexisting_file = true;
 						break;
 					}
@@ -652,9 +660,9 @@ void GUIManager::do_gui() {
 			}
 			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
 
-			if (ImGui::BeginPopupModal("Incorrect File Path"))
+			if (ImGui::BeginPopupModal("Incorrect File Path", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				ImGui::Text("Some sprite file you are trying to open doesn't exist");
+				ImGui::Text("Some sprite file you are trying to open doesn't exist:");
 
 				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
 				{
@@ -797,7 +805,7 @@ void GUIManager::do_gui() {
 				auto found_unexisting_file = false;
 
 				if (!file_exists(filename.c_str())) {
-					CLOG_ERROR("This file doesn't exist: %s" << filename.c_str());
+					CLOG_ERROR("This file doesn't exist: " << filename.c_str());
 					found_unexisting_file = true;
 				}
 
@@ -824,9 +832,10 @@ void GUIManager::do_gui() {
 			}
 			END_BUTTON_ALIGNED_RIGHT_NEXT(accept);
 
-			if (ImGui::BeginPopupModal("Incorrect File Path"))
+			if (ImGui::BeginPopupModal("Incorrect File Path", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				ImGui::Text("The file you are trying to open doesn't exist: %s", filename.c_str());
+				ImGui::Text("The file you are trying to open doesn't exist:");
+				ImGui::TextWrapped("%s", filename.c_str());
 
 				IF_BUTTON_ALIGNED_RIGHT_FIRST("Close", ImVec2(120, 0))
 				{
