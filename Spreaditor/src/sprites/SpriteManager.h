@@ -34,9 +34,13 @@ public:
 	float get_main_sprite_zoom() const { return m_main_sprite_zoom; }
 	void set_main_sprite_zoom(float zoom) { m_main_sprite_zoom = zoom; }
 	int get_current_main_sprite_index() const { return m_playing_animation ? m_current_animation_sprite : m_current_main_sprite_index; }
-	void set_current_main_sprite_index(int index) { m_current_main_sprite_index = index; }
+	void set_current_main_sprite_index(int index) { if (index >= 0 && index < m_sprites.size()) { m_current_main_sprite_index = index; } }
 	const std::vector<sf::Sprite>& get_sprites() { return m_sprites; }
 	const sf::Sprite& get_cached_drawn_main_sprite() { return m_drawn_main_sprite_cached; }
+
+	void go_to_next_sprite() { if(!m_playing_animation) set_current_main_sprite_index(m_current_main_sprite_index + 1); }
+	void go_to_previous_sprite() { if (!m_playing_animation) set_current_main_sprite_index(m_current_main_sprite_index - 1); }
+
 
 	bool is_playing_animation() const { return m_playing_animation; }
 	void toggle_play_animation() { m_playing_animation = !m_playing_animation; m_current_animation_sprite = m_first_animation_frame; }

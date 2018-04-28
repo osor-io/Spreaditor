@@ -4,6 +4,8 @@
 
 #include "../os/OSStatic.h"
 
+#include "../sprites/SpriteManager.h"
+
 
 WindowManager::WindowManager() {}
 
@@ -55,6 +57,27 @@ void WindowManager::manage_events() {
 					static_cast<float>(m_window->getSize().y))));
 
 		}
+
+
+		/*
+		@@TODO @@MAYBE
+
+		Consider moving the code that deals with inputs of characters
+		to a different file that deals only with these hotkeys
+
+		*/
+
+		if (event.type == sf::Event::EventType::KeyPressed) {
+
+			if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left) {
+				SpriteManager::get().go_to_previous_sprite();
+			}
+			else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right) {
+				SpriteManager::get().go_to_next_sprite();
+			}
+
+		}
+
 	}
 
 }
