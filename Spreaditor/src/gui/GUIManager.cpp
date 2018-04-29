@@ -172,6 +172,8 @@ void GUIManager::do_gui() {
 			auto path = extract_path(filename.c_str());
 			auto only_name = extract_filename(filename.c_str());
 
+			only_name = only_name.substr(0, only_name.find_last_of("."));
+
 			auto json_name = std::string();
 			auto png_name = std::string();
 
@@ -293,6 +295,8 @@ void GUIManager::do_gui() {
 
 			auto path = extract_path(writing_filename);
 			auto only_name = extract_filename(writing_filename);
+
+			only_name = only_name.substr(0, only_name.find_last_of("."));
 
 			auto json_name = std::string();
 			auto png_name = std::string();
@@ -989,6 +993,7 @@ void GUIManager::do_gui() {
 
 	ImGui::EndMainMenuBar();
 
+
 	if (m_show_imgui_demo) ImGui::ShowDemoWindow();
 	if (m_show_timeline) draw_timeline();
 	if (m_show_tools) ToolsManager::get().draw_tools_gui();
@@ -1163,8 +1168,9 @@ void GUIManager::draw_timeline() {
 		ImGui::SetWindowPos(ImVec2(0, screen_size.y - window_height), true);
 		m_timeline_height = window_height;
 	}
-	ImGui::End();
 
+
+	ImGui::End();
 }
 
 void GUIManager::draw_timeline_sprite(const sf::Sprite& sprite, int sprite_index, float height) {

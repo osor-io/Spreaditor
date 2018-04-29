@@ -69,11 +69,15 @@ void WindowManager::manage_events() {
 
 		if (event.type == sf::Event::EventType::KeyPressed) {
 
-			if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left) {
-				SpriteManager::get().go_to_previous_sprite();
-			}
-			else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right) {
-				SpriteManager::get().go_to_next_sprite();
+			if (!ImGui::GetIO().WantCaptureKeyboard) {
+
+				if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left) {
+					SpriteManager::get().go_to_previous_sprite();
+				}
+				else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right) {
+					SpriteManager::get().go_to_next_sprite();
+				}
+
 			}
 
 		}
