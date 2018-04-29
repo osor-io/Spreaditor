@@ -1119,13 +1119,14 @@ void GUIManager::draw_timeline() {
 				auto& to = SpriteManager::get().last_animation_frame();
 				ImGui::DragInt("##AnimationToFrame", &to, 1.0f, from, sprite_count - 1, "To: %.0f");
 
-				from = from > sprite_count ? sprite_count : (from < 0 ? 0 : from);
-				to = to < from ? from : (to > sprite_count ? sprite_count : (to < 0 ? 0 : to));
+				from = from > (sprite_count-1) ? (sprite_count - 1) : (from < 0 ? 0 : from);
+				to = to < from ? from : (to >(sprite_count - 1) ? (sprite_count - 1) : (to < 0 ? 0 : to));
 
 				static auto framerate{ 15 };
 				static auto update_framerate_initial = true;
 
 				if (ImGui::InputInt("Framerate##Framerate", &framerate) || update_framerate_initial) {
+					framerate = framerate < 0 ? 15 : framerate;
 					SpriteManager::get().set_animation_framerate(framerate);
 					update_framerate_initial = false;
 				}
