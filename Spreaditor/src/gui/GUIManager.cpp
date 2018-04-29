@@ -1211,7 +1211,7 @@ void GUIManager::draw_timeline_sprite(const sf::Sprite& sprite, int sprite_index
 void GUIManager::draw_style_editor(ImGuiStyle* ref) {
 
 
-	ImGui::Begin("Style Editor");
+	ImGui::Begin("Style Editor",&m_show_style_editor);
 
 	// You can pass in a reference ImGuiStyle structure to compare to, revert to and save to (else it compares to an internally stored reference)
 	ImGuiStyle& style = ImGui::GetStyle();
