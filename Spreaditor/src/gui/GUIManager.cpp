@@ -113,6 +113,10 @@ sf::Vector2f GUIManager::global_to_sprite(sf::Vector2f global_pos) const {
 
 void GUIManager::update() {
 
+	// Per Tick variable updates/resets
+	{
+	}
+
 	// Mouse Updates
 	{
 		auto mouse_pos = ImGui::GetIO().MousePos;
@@ -143,11 +147,15 @@ void GUIManager::update() {
 
 void GUIManager::do_gui() {
 
+	m_should_allow_focus = true;
+
 	ImGui::PushFont(m_font);
 
 	ImGui::BeginMainMenuBar();
 
 	if (ImGui::BeginMenu("File")) {
+
+		m_should_allow_focus = false;
 
 		BEGIN_MENU_POPUP_MODAL("Import Spritesheet & Colliders");
 		{
@@ -962,6 +970,9 @@ void GUIManager::do_gui() {
 	}
 
 	if (ImGui::BeginMenu("View")) {
+
+		m_should_allow_focus = false;
+
 		ImGui::Checkbox("Timeline", &m_show_timeline);
 		ImGui::Checkbox("Tools", &m_show_tools);
 		ImGui::Checkbox("Collider Explorer", &m_show_collider_explorer);
@@ -984,6 +995,9 @@ void GUIManager::do_gui() {
 	}
 
 	if (ImGui::BeginMenu("Debug")) {
+
+		m_should_allow_focus = false;
+
 		ImGui::Checkbox("Debug Overlay", &m_show_debug_overlay);
 		ImGui::Checkbox("ImGui Demo", &m_show_imgui_demo);
 		ImGui::EndMenu();

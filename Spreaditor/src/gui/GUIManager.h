@@ -36,6 +36,7 @@ public:
 
 	void set_debug_open(bool);
 	bool is_debug_open() const;
+	bool focus_allowed() const { return m_should_allow_focus; }
 	float get_main_menu_height() const { return m_main_menu_height; }
 	float get_timeline_height() const { return m_timeline_height; }
 	const sf::Vector2f& get_global_mouse_pos() const { return m_global_mouse_pos; }
@@ -81,5 +82,7 @@ private:
 	bool m_is_mouse_inside_sprite{ false };
 
 	float m_scaling_factor{ 1.0f };
+
+	bool m_should_allow_focus = true;
 
 };

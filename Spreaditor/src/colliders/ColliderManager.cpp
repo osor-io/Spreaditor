@@ -744,7 +744,7 @@ void ColliderManager::draw_collider_gui() {
 									const auto rect_window_name = generate_edit_rect_name(
 										collider_type.name,
 										instance.name,
-										SpriteManager::get().get_current_main_sprite_index(),
+										sprite_id,
 										rect_index);
 
 									auto is_selected = rect_window_name.compare(m_selected_window_name) == 0;
@@ -759,7 +759,8 @@ void ColliderManager::draw_collider_gui() {
 										rect_index,
 										sprite_id);
 
-									if (ImGui::IsItemClicked()) {
+								
+									if (ImGui::IsItemClicked() && GUIManager::get().focus_allowed()) {
 										m_selected_window_name = rect_window_name;
 										ImGui::SetWindowFocus(rect_window_name.c_str());
 									}
