@@ -71,6 +71,13 @@ void ToolsManager::update() {
 	auto sprite_inside_sprite = GUIManager::get().is_mouse_inside_sprite();
 	auto sprite_mouse_position = GUIManager::get().get_sprite_mouse_pos();
 
+	static auto last_mouse_click_position = sf::Vector2f{};
+
+	if (ImGui::IsMouseClicked(0)) {
+		last_mouse_click_position = sprite_mouse_position;
+	}
+
+
 	if (m_current_tool == Tool::CREATE_COLLIDER && sprite_inside_sprite) {
 
 		if (dragging) {
@@ -79,8 +86,8 @@ void ToolsManager::update() {
 
 				m_currently_creating_collider = true;
 
-				m_new_collider.x = sprite_mouse_position.x;
-				m_new_collider.y = sprite_mouse_position.y;
+				m_new_collider.x = last_mouse_click_position.x;
+				m_new_collider.y = last_mouse_click_position.y;
 
 				if (m_p_selected_instance)
 					m_new_collider_color = ImColor(
