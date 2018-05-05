@@ -78,9 +78,9 @@ void ToolsManager::update() {
 	}
 
 
-	if (m_current_tool == Tool::CREATE_COLLIDER && sprite_inside_sprite) {
+	if (m_current_tool == Tool::CREATE_COLLIDER) {
 
-		if (dragging) {
+		if (dragging && !ImGui::GetIO().WantCaptureMouse && sprite_inside_sprite) {
 
 			if (!m_dragging) { // We just clicked to create a new collider
 
@@ -102,7 +102,7 @@ void ToolsManager::update() {
 			m_new_collider.height = sprite_mouse_position.y - m_new_collider.y;
 
 		}
-		else if (m_dragging) { // We just finished collider creation
+		else if (!dragging && m_dragging && m_currently_creating_collider) { // We just finished collider creation
 
 			m_currently_creating_collider = false;
 
