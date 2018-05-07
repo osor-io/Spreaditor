@@ -12,9 +12,13 @@ For the time being here you have two links used for the testing phase of this so
 
 ### Collider Creation
 
+Click on the image below or the following link to see an example of the tested task for **collider creation**: [youtube.com/watch?v=yEIaCdbTzys](https://www.youtube.com/watch?v=yEIaCdbTzys)
+
 [![Collider Creation](https://img.youtube.com/vi/yEIaCdbTzys/0.jpg)](https://www.youtube.com/watch?v=yEIaCdbTzys)
 
 
 ### Collider Editing
+
+Click on the image below or the following link to see an example of the tested task for **collider editing**: [youtube.com/watch?v=udQ1GnLJFu4](https://www.youtube.com/watch?v=udQ1GnLJFu4)
 
 [![Collider Editing](https://img.youtube.com/vi/udQ1GnLJFu4/0.jpg)](https://www.youtube.com/watch?v=udQ1GnLJFu4)
