@@ -3,6 +3,7 @@
 #include "../render/RenderManager.h"
 #include "../colliders/ColliderManager.h"
 #include "../sprites/SpriteManager.h"
+#include "../window/WindowManager.h"
 #include "GUIUtils.h"
 #include <limits>
 
@@ -629,6 +630,7 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 					auto window_size = ImGui::GetWindowSize();
 					auto window_pos_b = window_pos_a + window_size;
 
+					// We set the size and position of the rect
 					if (!m_reread_rects) {
 
 						auto pos_a = GUIManager::get().global_to_sprite(window_pos_a);
@@ -656,7 +658,7 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 						if (ImGui::BeginPopupContextWindow()) {
 
 							if (ImGui::MenuItem("Delete Rect")) {
-							
+
 								auto to_delete = RectToDelete{};
 								to_delete.type_name = type.name;
 								to_delete.instance_name = instance.name;
@@ -690,7 +692,7 @@ void ToolsManager::edit_rects_of_instance(const ColliderType & type, ColliderIns
 			++rect_index;
 		}
 
-		
+
 	}
 	style = previous_style;
 }

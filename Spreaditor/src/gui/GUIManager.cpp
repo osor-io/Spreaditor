@@ -167,7 +167,7 @@ void GUIManager::do_gui() {
 			MyImGui::SameLine();
 			// Give the user the option to select the filename with the explorer
 			if (ImGui::Button("Explore", ImVec2(120, 0))) {
-				auto filename = OSManager::get().user_save_file(\
+				auto filename = OSManager::get().user_open_file(\
 					//"(*.json) JavaScript Object Notation\0*.json\0"
 				);
 				assert(filename.size() < MAX_OS_FILENAME_SIZE);

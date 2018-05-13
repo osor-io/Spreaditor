@@ -1,9 +1,8 @@
 #include "WindowManager.h"
 #include "../config/Config.h"
 #include "../time/TimeManager.h"
-
+#include "../tools/ToolsManager.h" // Using this one could be dangerous: Used to ask for a resize (sets a bool to true) so we can be sure that use is safe
 #include "../os/OSStatic.h"
-
 #include "../sprites/SpriteManager.h"
 
 
@@ -47,7 +46,11 @@ void WindowManager::fill_events() {
 
 void WindowManager::manage_events() {
 
+	m_resized_this_frame = false;
+
+
 	for (const auto& event : m_frame_events) {
+
 
 		if (event.type == sf::Event::EventType::Resized) {
 
@@ -55,6 +58,11 @@ void WindowManager::manage_events() {
 				m_window->setView(sf::View(sf::FloatRect(0.f, 0.f,
 					static_cast<float>(m_window->getSize().x),
 					static_cast<float>(m_window->getSize().y))));
+
+
+			m_resized_this_frame = true;
+
+			ToolsManager::get().reread_rect_positions();
 
 		}
 
