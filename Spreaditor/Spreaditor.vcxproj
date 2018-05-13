@@ -197,6 +197,7 @@
     <ClCompile Include="src\tools\ToolsManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resources\resource.h" />
     <ClInclude Include="src\os\OSStatic.h" />
     <ClInclude Include="src\colliders\ColliderManager.h" />
     <ClInclude Include="src\colliders\ColliderFactory.h" />
@@ -263,12 +264,26 @@
     <ClInclude Include="src\tools\ToolsManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\toast_logo.aseprite" />
+    <None Include="assets\toast_logo_32p.inl" />
+    <None Include="assets\toast_logo_generate_ico.xcf" />
     <None Include="dep\include\detail\template_helpers.inl" />
     <None Include="dep\include\JsonCast.inl" />
     <None Include="dep\include\Member.inl" />
     <None Include="dep\include\Meta.inl" />
     <None Include="dep\include\tmxlite\Types.inl" />
     <None Include="src\debug\cafe.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources\Spreaditor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\toast_logo.ico" />
+    <Image Include="assets\toast_logo_128p.png" />
+    <Image Include="assets\toast_logo_16p.png" />
+    <Image Include="assets\toast_logo_256p.png" />
+    <Image Include="assets\toast_logo_32p.png" />
+    <Image Include="assets\toast_logo_64p.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

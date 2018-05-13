@@ -4,7 +4,7 @@
 #include "../tools/ToolsManager.h" // Using this one could be dangerous: Used to ask for a resize (sets a bool to true) so we can be sure that use is safe
 #include "../os/OSStatic.h"
 #include "../sprites/SpriteManager.h"
-
+#include "../../assets/toast_logo_32p.inl"
 
 WindowManager::WindowManager() {}
 
@@ -24,7 +24,11 @@ void WindowManager::start_up() {
 		config::project_name,
 		sf::Style::Default);
 
+	// Enable VSync
 	m_window->setVerticalSyncEnabled(true);
+
+	// Set the icon
+	m_window->setIcon(toast_icon.width, toast_icon.height, toast_icon.pixel_data);
 }
 
 void WindowManager::shut_down() {

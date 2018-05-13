@@ -332,6 +332,9 @@
     <ClInclude Include="src\os\OSStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resources\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\debug\cafe.inl">
@@ -352,5 +355,35 @@
     <None Include="dep\include\Meta.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="assets\toast_logo.aseprite" />
+    <None Include="assets\toast_logo_32p.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="assets\toast_logo_generate_ico.xcf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\toast_logo.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\toast_logo_16p.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\toast_logo_32p.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\toast_logo_64p.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\toast_logo_128p.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\toast_logo_256p.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources\Spreaditor.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
